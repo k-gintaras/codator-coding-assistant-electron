@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "CommonJS",
+    "strict": true,
+    "outDir": "./electron-dist",
+    "rootDir": "./",
+    "esModuleInterop": true
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["electron-dist"]
+}

@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/spec",
+    "types": ["jasmine"] /* Include test-related types */
+  },
+  "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
+}
