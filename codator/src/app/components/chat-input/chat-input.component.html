@@ -1,0 +1,92 @@
+<!-- chat-area.component.html -->
+<div class="p-4 bg-base-200">
+  <span
+    [ngClass]="
+      assistant?.name
+        ? 'text-lg font-semibold'
+        : 'text-lg font-semibold text-red-700'
+    "
+  >
+    {{
+      !assistant?.name ? "Select Assistant!" : "Ask: " + assistant?.name
+    }}</span
+  >
+  <div class="flex items-center mt-2 space-x-4">
+    <textarea
+      [(ngModel)]="userPrompt"
+      class="textarea textarea-bordered w-full h-16 resize-none"
+      placeholder="Describe the task or question..."
+    ></textarea>
+    <button
+      [ngClass]="
+        assistant?.name
+          ? 'btn btn-primary btn-md'
+          : 'btn btn-primary btn-md btn-disabled'
+      "
+      (click)="prompt()"
+    >
+      Ask
+    </button>
+  </div>
+</div>
+
+<div class="p-4 bg-base-200 mt-4">
+  <span class="text-lg font-semibold">Work Area (Correction Area)</span>
+
+  <!-- Textarea with DaisyUI dark theme -->
+  <app-coding-input></app-coding-input>
+
+  <!-- depends on if assistan is of type="chat" or "assistant" -->
+  <!-- chat doesnt have threads or instructions, it has keep in mind and Chat Remember, which is basically same as thread remember as it uses focuses memopries... -->
+  <!-- <button class="btn btn-secondary mt-4" (click)="prompt()">
+    Keep in mind For now (this prompt)
+  </button>
+  <button class="btn btn-secondary mt-4" (click)="prompt()">
+    Thread Remember (this assistant conversation and future conversations) (it
+    is possible to keep it temporary if we remove this memory after session...)
+  </button>
+  <button class="btn btn-secondary mt-4" (click)="prompt()">
+    Instruction Remember (this assistant)
+  </button>
+  <button class="btn btn-secondary mt-4" (click)="prompt()">
+    Just Remember (general memory we might use later)
+  </button> -->
+
+  <span class="flex">Remember Work Area</span>
+  <button
+    class="btn bg-slate-700 mt-4"
+    (click)="rememberForSession()"
+    title="Save context for this prompt, immediate use with higher token cost."
+  >
+    <span class="icon">🧠</span> Remember For This Session
+    <span class="icon">💸💸💸</span>
+  </button>
+
+  <button
+    class="btn bg-slate-700 mt-4"
+    (click)="rememberForConversation()"
+    title="Store conversation history for future interactions with moderate token cost."
+  >
+    <span class="icon">📎</span> Remember as Conversation
+    <span class="icon">💸💸</span>
+  </button>
+
+  <button
+    class="btn bg-slate-700 mt-4"
+    (click)="saveAssistantInstructions()"
+    title="Save permanent assistant instructions for long-term behavior, minimal token cost."
+  >
+    <span class="icon">⚙️</span> Remember as Instruction
+    <span class="icon">💸</span>
+  </button>
+
+  <button
+    class="btn bg-slate-700 mt-4"
+    (click)="saveForLaterUse()"
+    title="Store memory for future use, least cost and no immediate effect."
+  >
+    <span class="icon">📦</span> Save for later use <span class="icon">💵</span>
+  </button>
+
+  <!-- maybe consider  -->
+</div>

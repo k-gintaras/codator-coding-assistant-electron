@@ -1,0 +1,118 @@
+<div *ngIf="fullAssistant" class="p-10 m-10 bg-slate-600 rounded-box">
+  <h2 class="text-2xl font-semibold mb-4 text-center">Assistant Details</h2>
+
+  <!-- Assistant Name -->
+  <div class="mb-4">
+    <p class="font-semibold text-lg">Name:</p>
+    <input
+      [(ngModel)]="fullAssistant.name"
+      class="input input-bordered w-full"
+      placeholder="Enter name"
+    />
+  </div>
+
+  <!-- Assistant Description -->
+  <div class="mb-4">
+    <p class="font-semibold text-lg">Description:</p>
+    <textarea
+      [(ngModel)]="fullAssistant.description"
+      class="textarea textarea-bordered w-full"
+      placeholder="Enter description"
+    ></textarea>
+  </div>
+
+  <!-- Assistant Type -->
+  <div class="mb-4">
+    <p class="font-semibold text-lg">Type:</p>
+    <select
+      [(ngModel)]="fullAssistant.type"
+      class="select select-bordered w-full"
+    >
+      <option value="chat">Chat</option>
+      <option value="assistant">Assistant</option>
+    </select>
+  </div>
+
+  <!-- Assistant Model -->
+  <div class="mb-4">
+    <p class="font-semibold text-lg">Model:</p>
+    <select
+      [(ngModel)]="fullAssistant.model"
+      class="select select-bordered w-full"
+    >
+      <option value="gpt-4-turbo-preview">GPT-4 Turbo Preview</option>
+      <option value="gpt-4o">GPT-4o</option>
+      <option value="gpt-4">GPT-4</option>
+      <option value="gpt-3.5-turbo-16k">GPT-3.5 Turbo 16k</option>
+      <option value="gpt-4-turbo-2024-04-09">GPT-4 Turbo 2024-04-09</option>
+      <option value="gpt-4-turbo">GPT-4 Turbo</option>
+      <option value="gpt-4o-mini">GPT-4o Mini</option>
+      <option value="o1-mini">O1 Mini</option>
+      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+    </select>
+  </div>
+
+  <!-- Save Button -->
+  <div class="mt-6 text-center">
+    <button (click)="save()" class="btn btn-primary">Save Changes</button>
+  </div>
+
+  <!-- Tag Manager and Feedback -->
+  <div class="flex justify-between mt-6">
+    <app-tag-manager
+      [entityId]="fullAssistant.id"
+      [entityType]="'assistant'"
+    ></app-tag-manager>
+
+    <app-feedback [assistant]="fullAssistant"></app-feedback>
+  </div>
+
+  <!-- Created and Updated Date -->
+  <div class="mb-4">
+    <p class="font-semibold text-lg">Created At:</p>
+    <p>{{ fullAssistant.createdAt | date : "medium" }}</p>
+  </div>
+  <div class="mb-4">
+    <p class="font-semibold text-lg">Updated At:</p>
+    <p
+      [ngClass]="{
+        'text-red-500': isAssistantOutdated(),
+        'text-green-500': !isAssistantOutdated()
+      }"
+    >
+      {{ fullAssistant.updatedAt | date : "medium" }}
+    </p>
+    <p *ngIf="isAssistantOutdated()" class="text-yellow-300">
+      * This assistant needs an update to reflect the latest focused memories.
+    </p>
+  </div>
+
+  <!-- Memory Focus Rule -->
+  <div *ngIf="fullAssistant?.memoryFocusRule" class="mb-4">
+    <p class="font-semibold text-lg">Memory Focus Rule:</p>
+    <p>
+      <strong>Max Results:</strong>
+      {{ fullAssistant.memoryFocusRule.maxResults }}
+    </p>
+    <p>
+      <strong>Priority Tags:</strong>
+      {{ fullAssistant.memoryFocusRule.priorityTags.join(", ") || "None" }}
+    </p>
+  </div>
+
+  <!-- Feedback Summary -->
+  <div *ngIf="fullAssistant?.feedbackSummary" class="mb-4">
+    <p class="font-semibold text-lg">Feedback Summary:</p>
+    <p>
+      <strong>Average Rating:</strong>
+      {{ fullAssistant.feedbackSummary.avgRating || "N/A" }}
+    </p>
+    <p>
+      <strong>Total Feedback:</strong>
+      {{ fullAssistant.feedbackSummary.totalFeedback || 0 }}
+    </p>
+  </div>
+
+  <!-- Edit Memories Section -->
+  <app-edit-memories [assistant]="fullAssistant"></app-edit-memories>
+</div>

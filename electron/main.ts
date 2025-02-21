@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
+import { registerIpcHandlers } from './helpers/ipc-handlers';
 
 dotenv.config();
 console.log('API_URL:', process.env.API_URL); // Test the environment variable
@@ -33,7 +34,11 @@ const createWindow = () => {
   });
 };
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  // ! here we add addresses to allow angular calling them and executing stuff
+  registerIpcHandlers(); // ✅ Registers all IPC handlers
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

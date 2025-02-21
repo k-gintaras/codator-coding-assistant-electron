@@ -1,0 +1,8 @@
+<textarea
+  id="editor"
+  [(ngModel)]="userCorrection"
+  class="textarea textarea-bordered w-full h-48 bg-gray-800 text-white placeholder-gray-400"
+  placeholder="Write your correction here..."
+  (ngModelChange)="onCorrectionChange()"
+  (keydown)="handleKeys($event)"
+></textarea>

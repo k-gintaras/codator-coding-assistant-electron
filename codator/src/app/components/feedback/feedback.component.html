@@ -1,0 +1,31 @@
+<div class="bg-base-200 p-4 rounded-lg shadow-md max-w-sm">
+  <h4 class="text-lg font-semibold mb-2">Feedback for {{ assistant.name }}</h4>
+
+  <!-- Star Rating -->
+  <div class="flex space-x-1 mb-2">
+    <button
+      *ngFor="let i of [1, 2, 3, 4, 5]"
+      class="btn btn-xs"
+      [ngClass]="{ 'bg-yellow-400': i <= rating, 'bg-gray-600': i > rating }"
+      (click)="setRating(i)"
+    >
+      ⭐
+    </button>
+  </div>
+
+  <!-- Comment Box -->
+  <textarea
+    [(ngModel)]="comment"
+    class="textarea textarea-bordered w-full text-sm"
+    placeholder="Additional comments (optional)"
+  ></textarea>
+
+  <!-- Submit Button -->
+  <button
+    class="btn btn-sm btn-primary w-full mt-2"
+    [disabled]="submitting || rating === 0"
+    (click)="submitFeedback()"
+  >
+    {{ submitting ? "Submitting..." : "Submit" }}
+  </button>
+</div>

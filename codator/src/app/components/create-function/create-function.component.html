@@ -1,0 +1,58 @@
+<div class="max-w-2xl mx-auto m-10 p-6 bg-slate-500 rounded-lg shadow-lg">
+  <h2 class="text-2xl font-bold text-center mb-4">Create Function</h2>
+
+  <form (ngSubmit)="onSubmit()" #functionForm="ngForm">
+    <div class="mb-4">
+      <label for="name" class="block text-sm font-medium text-gray-700"
+        >Function Name</label
+      >
+      <input
+        id="name"
+        name="name"
+        type="text"
+        [(ngModel)]="functionScript.name"
+        required
+        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        placeholder="Enter function name"
+      />
+    </div>
+
+    <div class="mb-4">
+      <label for="description" class="block text-sm font-medium text-gray-700"
+        >Description</label
+      >
+      <textarea
+        id="description"
+        name="description"
+        [(ngModel)]="functionScript.description"
+        required
+        rows="3"
+        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        placeholder="Enter function description"
+      ></textarea>
+    </div>
+
+    <div class="mb-4">
+      <label for="code" class="block text-sm font-medium text-gray-700"
+        >Function Code</label
+      >
+      <app-coding
+        [(code)]="functionScript.code"
+        (codeChange)="onCodeChange($event)"
+      >
+      </app-coding>
+    </div>
+
+    <div class="flex justify-between items-center">
+      <button
+        type="submit"
+        class="px-6 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      >
+        Save Function
+      </button>
+      <p *ngIf="statusMessage" class="text-sm text-gray-600">
+        {{ statusMessage }}
+      </p>
+    </div>
+  </form>
+</div>

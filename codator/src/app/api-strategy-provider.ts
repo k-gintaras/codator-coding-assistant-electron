@@ -1,4 +1,4 @@
-import { Injectable, InjectionToken, Provider } from '@angular/core';
+import { Injectable, InjectionToken } from '@angular/core';
 import { environment } from '../environments/environment.electron';
 import { ApiStrategy } from './interfaces/api.strategy.interface';
 import { ElectronApiService } from './services/general-services/electron-api.service';

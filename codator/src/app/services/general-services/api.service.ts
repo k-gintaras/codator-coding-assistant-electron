@@ -1,14 +1,11 @@
-import { Injectable, Inject } from '@angular/core';
-import { API_STRATEGY } from '../../api-strategy-provider';
+import { Injectable } from '@angular/core';
 import { ApiStrategy } from '../../interfaces/api.strategy.interface';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ApiService {
-  constructor(@Inject(API_STRATEGY) private strategy: ApiStrategy) {}
-
-  processText(input: string): Promise<string> {
-    return this.strategy.processText(input);
+export class ApiService implements ApiStrategy {
+  async processText(input: string): Promise<string> {
+    return input;
   }
 }

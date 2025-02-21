@@ -1,0 +1,69 @@
+<div class="w-full mx-auto mt-6 p-4 rounded-lg shadow-md">
+  <!-- Message List Container -->
+  <div class="space-y-4">
+    <ng-container *ngFor="let message of getMessagesToShow(); let i = index">
+      <div
+        class="p-4 rounded-lg shadow-md flex items-start justify-between"
+        [ngClass]="{
+          'bg-gray-600': message.type === 'request',
+          'bg-teal-800': message.type === 'response',
+          'bg-gray-800': message.type === 'request-code',
+          'bg-gray-700': message.type === 'response-code',
+        }"
+      >
+        <!-- Owner displayed inline with the content -->
+        <span class="font-semibold mr-2">{{ message.owner }}:</span>
+
+        <!-- Display code and text separately -->
+        <div class="w-full flex items-center">
+          <!-- If it’s a code message, display it in the app-code component -->
+          <ng-container
+            *ngIf="
+              message.type === 'request-code' ||
+              message.type === 'response-code'
+            "
+          >
+            <app-code [code]="message.content"></app-code>
+          </ng-container>
+
+          <!-- If it’s a regular text message, display it normally -->
+          <ng-container
+            *ngIf="
+              message.type !== 'request-code' &&
+              message.type !== 'response-code'
+            "
+          >
+            <p class="text-white">{{ message.content }}</p>
+          </ng-container>
+        </div>
+
+        <!-- Buttons aligned to the right -->
+        <div class="flex space-x-2">
+          <button
+            class="btn btn-xs bg-yellow-800"
+            (click)="editMessage(message.content)"
+          >
+            Edit
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Loading State -->
+    <div
+      [ngClass]="isLoading ? 'visible text-center' : 'invisible text-center'"
+    >
+      <span class="loading loading-ring text-error loading-lg"></span>
+    </div>
+
+    <!-- Dropdown for showing all messages -->
+    <div class="mt-2 text-center">
+      <button
+        class="btn btn-xs btn-primary"
+        (click)="showAllMessages = !showAllMessages"
+      >
+        {{ showAllMessages ? "Show Less" : "Show All Messages" }}
+      </button>
+    </div>
+  </div>
+</div>

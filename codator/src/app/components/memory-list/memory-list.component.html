@@ -1,0 +1,60 @@
+<div *ngIf="memories.length">
+  <h3 class="text-xl font-semibold mt-6 text-gray-100">{{ title }}</h3>
+  <ul>
+    <li
+      *ngFor="let memory of memories"
+      [class.border-red-600]="isMemoryExceeded(memory) || isMemoryFresh(memory)"
+      class="bg-gray-900 p-2 border-2 rounded-lg mb-2 transition-all duration-200 hover:shadow-sm"
+    >
+      <div class="flex justify-between items-center">
+        <p class="text-gray-400 text-sm">
+          <strong>Description:</strong> {{ memory.description }}
+        </p>
+        <p class="text-xs text-gray-500">
+          <strong>Type:</strong> {{ memory.type }}
+        </p>
+      </div>
+
+      <!-- Display data if it exists -->
+      <div *ngIf="memory.data" class="text-xs text-gray-500 mt-1">
+        <strong>Data:</strong> {{ memory.data }}
+      </div>
+
+      <!-- Buttons Row (Horizontal Layout) -->
+      <div class="flex justify-start gap-2 mt-2">
+        <!-- Forget Button -->
+        <button
+          *ngIf="canForget"
+          (click)="forget(memory)"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs p-1 w-20 transition duration-150"
+        >
+          Forget
+        </button>
+
+        <!-- Focus Button -->
+        <button
+          *ngIf="canFocus"
+          (click)="focus(memory)"
+          class="bg-teal-600 hover:bg-teal-700 text-white rounded-md text-xs p-1 w-20 transition duration-150"
+        >
+          Focus
+        </button>
+        <button
+          *ngIf="isAllowedToRememberDeep(memory)"
+          (click)="rememberDeep(memory)"
+          class="bg-teal-600 hover:bg-teal-700 text-white rounded-md text-xs p-1 w-20 transition duration-150"
+        >
+          Remember Deep
+        </button>
+
+        <!-- Edit Button -->
+        <button
+          (click)="edit(memory)"
+          class="bg-gray-600 hover:bg-gray-700 text-white rounded-md text-xs p-1 w-20 transition duration-150"
+        >
+          Edit
+        </button>
+      </div>
+    </li>
+  </ul>
+</div>

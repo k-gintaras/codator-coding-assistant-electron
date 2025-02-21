@@ -1,0 +1,123 @@
+<div class="bg-base-100 p-4 rounded-lg shadow-md mt-6">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-semibold flex items-center">
+      <span class="mr-2">🧠</span> Memory Library
+    </h3>
+    <button routerLink="/create-memory" class="btn btn-sm flex items-center">
+      <span>➕</span>
+    </button>
+  </div>
+
+  <input
+    type="text"
+    [(ngModel)]="searchTerm"
+    (ngModelChange)="onSearchChange()"
+    class="input input-bordered input-sm w-full mb-4"
+    placeholder="Search memories..."
+  />
+
+  <!-- Loose Memories -->
+  <div *ngIf="organizedMemories?.looseMemories?.length" class="mb-4">
+    <h4 class="font-semibold">Loose Memories</h4>
+    <ul class="space-y-2">
+      <li *ngFor="let memory of organizedMemories?.looseMemories">
+        <div class="flex items-center justify-between">
+          <button
+            [routerLink]="['/edit-memory', memory.id]"
+            routerLinkActive="bg-base-300"
+            [ngClass]="{
+              'bg-base-300': selectedMemory === memory,
+              'hover:bg-base-300': selectedMemory !== memory
+            }"
+            class="btn"
+            (click)="selectMemory(memory)"
+          >
+            {{ memory.description | slice : 0 : 30 }}...
+          </button>
+          <button class="btn btn-sm" [routerLink]="['/edit-memory', memory.id]">
+            ✎
+          </button>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Owned Memories -->
+  <div *ngIf="organizedMemories?.ownedMemories?.length" class="mb-4">
+    <h4 class="font-semibold">Owned Memories</h4>
+    <div *ngFor="let owned of organizedMemories?.ownedMemories" class="mb-2">
+      <h5 class="text-sm text-gray-500">Assistant: {{ owned.assistantId }}</h5>
+      <ul class="space-y-2">
+        <li *ngFor="let memory of owned.memories">
+          <div class="flex items-center justify-between">
+            <button
+              [routerLink]="['/edit-memory', memory.id]"
+              [queryParams]="{ assistantId: owned.assistantId }"
+              routerLinkActive="bg-base-300"
+              [ngClass]="{
+                'bg-base-300': selectedMemory === memory,
+                'hover:bg-base-300': selectedMemory !== memory
+              }"
+              class="btn"
+              (click)="selectMemory(memory)"
+            >
+              {{ memory.description | slice : 0 : 30 }}...
+            </button>
+            <button
+              class="btn btn-sm"
+              [routerLink]="['/edit-memory', memory.id]"
+            >
+              ✎
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Focused Memories -->
+  <div *ngIf="organizedMemories?.focusedMemories?.length" class="mb-4">
+    <h4 class="font-semibold">Focused Memories</h4>
+    <div
+      *ngFor="let focused of organizedMemories?.focusedMemories"
+      class="mb-2"
+    >
+      <h5 class="text-sm text-gray-500">
+        Focus Rule: {{ focused.memoryFocusRuleId }}
+      </h5>
+      <ul class="space-y-2">
+        <li *ngFor="let memory of focused.memories">
+          <div class="flex items-center justify-between">
+            <button
+              [routerLink]="['/edit-memory', memory.id]"
+              [queryParams]="{ memoryFocusRuleId: focused.memoryFocusRuleId }"
+              routerLinkActive="bg-base-300"
+              [ngClass]="{
+                'bg-base-300': selectedMemory === memory,
+                'hover:bg-base-300': selectedMemory !== memory
+              }"
+              class="btn"
+              (click)="selectMemory(memory)"
+            >
+              {{ memory.description | slice : 0 : 30 }}...
+            </button>
+            <button
+              class="btn btn-sm"
+              [routerLink]="['/edit-memory', memory.id]"
+            >
+              ✎
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- No memories found message -->
+  <div
+    *ngIf="organizedMemories && !memories.length"
+    class="text-gray-500 text-center"
+  >
+    No memories found.
+  </div>
+</div>

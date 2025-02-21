@@ -1,0 +1,40 @@
+<div class="bg-base-100 p-4 rounded-lg shadow-md mt-6">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-semibold flex items-center">
+      <span class="mr-2">🔧</span> Function Library
+    </h3>
+    <button routerLink="/create-function" class="btn btn-sm flex items-center">
+      <span>➕</span>
+    </button>
+  </div>
+
+  <input
+    type="text"
+    class="input input-bordered input-sm w-full mb-4"
+    placeholder="Search function..."
+  />
+
+  <div class="overflow-auto max-h-60">
+    <!-- Scrollable container -->
+    <ul class="space-y-2">
+      <li
+        *ngFor="let fun of functionLibrary"
+        class="flex items-center justify-between"
+      >
+        <button
+          class="btn p-2 bg-base-200 rounded"
+          [routerLink]="['/edit-function', fun.id]"
+        >
+          <span>{{ fun.name }}</span>
+        </button>
+
+        <button [routerLink]="['/edit-function', fun.id]" class="btn btn-sm">
+          ✎
+        </button>
+        <button (click)="handleTextProcessing(fun)" class="btn btn-sm">
+          Process Work Area
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>

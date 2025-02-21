@@ -1,0 +1,11 @@
+<div class="bg-base-100 p-4 rounded-lg shadow-md">
+  <h3 class="text-lg font-semibold mb-2 flex items-center">
+    <span class="mr-2">📂</span> Project Library
+  </h3>
+  <select class="select select-bordered w-full">
+    <option *ngFor="let project of projects" [value]="project.id">
+      {{ project.name }}
+    </option>
+  </select>
+  <button class="btn btn-primary mt-4">Load Project</button>
+</div>

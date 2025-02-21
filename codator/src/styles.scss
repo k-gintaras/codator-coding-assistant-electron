@@ -1,3 +1,30 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.implemented {
+  border: 1px solid green;
+}
+.todo {
+  border: 1px solid white;
+}
+
+/* For smooth fade-in/out effect */
+.fade {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.fade-enter, .fade-leave-to /* .fade-leave-to is for leave animations */ {
+  opacity: 0;
+}
+
+label {
+  transition: border-color 0.3s ease-in-out;
+}
+
+label.ng-animating {
+  border-color: red; /* Add a red border when shaking */
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

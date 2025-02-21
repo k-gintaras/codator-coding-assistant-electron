@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@angular/core';
 import { FunctionScript } from '../../interfaces/function-script.interface';
 import { ScriptStorageStrategy } from '../../interfaces/script-storage.strategy.interface';

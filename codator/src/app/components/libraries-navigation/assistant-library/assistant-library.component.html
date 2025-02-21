@@ -1,0 +1,46 @@
+<div class="bg-base-100 p-4 rounded-lg shadow-md mt-6">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-semibold flex items-center">
+      <span class="mr-2">🤖</span> Assistant Library
+    </h3>
+    <button routerLink="/create-assistant" class="btn btn-sm flex items-center">
+      <span>➕</span>
+    </button>
+  </div>
+
+  <input
+    type="text"
+    [(ngModel)]="searchTerm"
+    (ngModelChange)="onSearchChange()"
+    class="input input-bordered input-sm w-full mb-4"
+    placeholder="Search assistants..."
+  />
+
+  <div class="overflow-auto max-h-60">
+    <!-- Scrollable container -->
+    <ul class="space-y-2">
+      <li *ngFor="let assistant of assistants">
+        <div class="flex items-center justify-between">
+          <button
+            [routerLink]="['/chat-assistant', assistant.id]"
+            routerLinkActive="bg-base-300"
+            [ngClass]="{
+              'bg-base-300': selectedAssistant === assistant,
+              'hover:bg-base-300': selectedAssistant !== assistant
+            }"
+            class="btn"
+          >
+            {{ assistant.name }}
+          </button>
+
+          <button
+            class="btn btn-sm"
+            [routerLink]="['/edit-assistant', assistant.id]"
+          >
+            ✎
+          </button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>

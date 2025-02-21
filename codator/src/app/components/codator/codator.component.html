@@ -1,0 +1,28 @@
+<div class="flex h-screen">
+  <!-- Sidebar: Project, Function, Assistant Libraries -->
+  <div class="w-1/4 bg-base-200 p-4 space-y-6">
+    <!-- Project Library -->
+    <!-- <app-project-library></app-project-library> -->
+
+    <!-- Function Library -->
+    <div class="max-h-screen overflow-y-auto">
+      <app-function-library></app-function-library>
+    </div>
+
+    <!-- Assistant Library -->
+    <div class="max-h-screen overflow-y-auto">
+      <app-assistant-library></app-assistant-library>
+    </div>
+
+    <!-- Memory Library -->
+    <div class="max-h-screen overflow-y-auto">
+      <app-memory-library></app-memory-library>
+    </div>
+  </div>
+
+  <!-- Parent Container (flex) -->
+  <div class="flex flex-1 flex-col">
+    <!-- <app-chat-area></app-chat-area> -->
+    <router-outlet></router-outlet>
+  </div>
+</div>

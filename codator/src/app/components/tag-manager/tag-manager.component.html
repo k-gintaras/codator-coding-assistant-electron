@@ -1,0 +1,31 @@
+<div class="p-4">
+  <h2 class="text-xl font-bold mb-4">Manage Tags for {{ entityType }}</h2>
+
+  <!-- Tag input -->
+  <div class="flex items-center mb-4">
+    <input
+      [(ngModel)]="tagInput"
+      (ngModelChange)="onTagInputChange()"
+      class="input input-bordered input-primary w-full max-w-xs"
+      type="text"
+      placeholder="Enter tag name"
+    />
+    <button
+      (click)="addTag()"
+      class="btn btn-primary ml-2"
+      [disabled]="!tagInput.trim()"
+    >
+      Add Tag
+    </button>
+  </div>
+
+  <!-- Tag List -->
+  <div class="flex flex-wrap gap-2">
+    <div *ngFor="let tag of tags" class="flex items-center">
+      <span class="badge badge-secondary">{{ tag.name }}</span>
+      <button (click)="removeTag(tag.id)" class="btn btn-sm btn-error ml-2">
+        Remove
+      </button>
+    </div>
+  </div>
+</div>
