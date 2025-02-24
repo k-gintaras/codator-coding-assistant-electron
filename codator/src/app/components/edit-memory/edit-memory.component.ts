@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { AssistantService } from '../../services/assistants-services/assistant.service';
 import { Assistant } from '../../services/assistants-api/assistant.service';
 import { Memory } from '../../services/assistants-api/memory.service';
+import { Tag } from '../../services/assistants-api/tag.service';
 
 @Component({
   standalone: true,
@@ -30,6 +31,8 @@ export class EditMemoryComponent implements OnInit {
   assistantId: string | null = null;
   memoryFocusRuleId: string | null = null;
   assistant: Assistant | null = null;
+
+  isFunctionMemory = false;
 
   constructor(
     private memoryService: MemoryService,
@@ -95,7 +98,16 @@ export class EditMemoryComponent implements OnInit {
 
   onTagChange(tags: string[]): void {
     this.tags = tags;
-    console.log('Tags changed:', tags);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getCode(code: any) {
+    return code.data;
+  }
+
+  onTagsLoaded(tags: Tag[]): void {
+    const hasFunction = tags.some((tag) => tag.name === 'function');
+    this.isFunctionMemory = hasFunction;
   }
 
   ngOnInit(): void {

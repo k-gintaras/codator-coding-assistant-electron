@@ -10,6 +10,7 @@ import {
   Memory,
   MemoryWithTags,
 } from '../../services/assistants-api/memory.service';
+import { PROMPT_SEPARATOR } from '../../app.constants';
 
 @Component({
   standalone: true,
@@ -203,11 +204,12 @@ export class EditMemoriesComponent implements OnChanges {
       createdAt: null,
       updatedAt: null,
     };
-    if (!m.id) return;
     if (!this.assistant) return;
-    this.memoryService.createLongMemory(this.assistant, m, true);
-    this.warnService.warn('Created and Focused');
-    this.reloadMemories();
+    this.memoryService.createLongMemory(this.assistant, m, true).then((ok) => {
+      console.log('Created and Focused:', ok);
+      this.warnService.warn('Created and Focused');
+      this.reloadMemories();
+    });
   }
 
   async forget(m: Memory) {
@@ -223,6 +225,30 @@ export class EditMemoriesComponent implements OnChanges {
   // Handle form submission for adding or updating memories
   edit(m: Memory) {
     this.memory = m;
+  }
+
+  // Handle form submission for adding or updating memories
+  deleteMemory(m: Memory) {
+    if (!m.id) return;
+    this.memoryService.deleteMemory(m.id).then((success) => {
+      if (success) {
+        this.warnService.warn('Memory Deleted');
+        this.reloadMemories();
+      }
+    });
+  }
+
+  async fuse(m: Memory[]) {
+    if (!this.assistant) return;
+    console.log('Fusing memories:', m);
+
+    for (const memory of m) {
+      await this.memoryService.forgetDeep(this.assistant, memory);
+    }
+
+    this.createAndFocus(
+      m.map((memory) => memory.description).join(PROMPT_SEPARATOR)
+    );
   }
 
   // do we save as assistant memory, as focused memory, as owned memory, as temporary memory?

@@ -82,14 +82,12 @@ export class ChatInputComponent {
     this.inputService.setPromptInput(this.userPrompt);
 
     const expectedResponseSize: TextSize = 'page';
-    const response = await this.promptMessageService.sendPromptCustomized(
+    await this.promptMessageService.sendPromptCustomized(
       this.assistant,
       prompt,
       this.useTempMemories,
       expectedResponseSize
     );
-
-    console.log(response);
   }
 
   rememberForSession() {

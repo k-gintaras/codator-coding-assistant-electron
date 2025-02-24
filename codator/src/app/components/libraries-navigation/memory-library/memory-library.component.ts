@@ -19,6 +19,10 @@ export class MemoryLibraryComponent implements OnInit {
   searchTerm = '';
   selectedMemory: Memory | null = null;
 
+  showLooseMemories = false;
+  showOwnedMemories = false;
+  showFocusedMemories = false;
+
   constructor(private memoryService: MemoryService) {}
 
   selectMemory(memory: Memory) {

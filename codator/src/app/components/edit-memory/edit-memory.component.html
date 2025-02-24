@@ -4,14 +4,15 @@
   </h2>
 
   <form (ngSubmit)="onSubmit()" #memoryForm="ngForm">
-    <div class="mb-4">
+    <h3 class="mb-4 font-bold">
       {{
         memoryFocusRuleId
           ? "Focused memory, focus rule id: " + memoryFocusRuleId
           : ""
       }}
       {{ assistantId ? "Owned memory, assistant id: " + assistantId : "" }}
-    </div>
+      {{ isFunctionMemory ? "Function memory" : "" }}
+    </h3>
     <div class="mb-4">
       <label for="description" class="block text-sm font-medium text-gray-700">
         Description
@@ -25,6 +26,15 @@
         class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         placeholder="Enter memory description"
       ></textarea>
+    </div>
+
+    <div class="mb-4" *ngIf="isFunctionMemory && memory.data">
+      <label for="data" class="block text-sm font-medium text-gray-700">
+        Data
+      </label>
+      <code>
+        <pre>{{ getCode(memory.data) }}</pre>
+      </code>
     </div>
 
     <div class="mb-4">
@@ -48,13 +58,19 @@
 
     <div class="flex justify-between items-center">
       <button
+        *ngIf="!isFunctionMemory"
         type="submit"
         class="px-6 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       >
         {{ memory.id !== "" ? "Update Memory" : "Create Memory" }}
       </button>
       <button
-        *ngIf="memory.id !== '' && !assistantId && !memoryFocusRuleId"
+        *ngIf="
+          memory.id !== '' &&
+          !assistantId &&
+          !memoryFocusRuleId &&
+          !isFunctionMemory
+        "
         (click)="deleteMemory()"
         class="px-6 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       >
@@ -68,6 +84,7 @@
     [entityId]="memory.id"
     [entityType]="'memory'"
     (tagChange)="onTagChange($event)"
+    (tagsLoaded)="onTagsLoaded($event)"
   ></app-tag-manager>
   <span class="badge" *ngFor="let tag of tags">
     {{ tag }}

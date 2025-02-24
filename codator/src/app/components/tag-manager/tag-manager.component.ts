@@ -21,6 +21,7 @@ import { Tag } from '../../services/assistants-api/tag.service';
 export class TagManagerComponent implements OnChanges {
   @Output() tagChange = new EventEmitter<string[]>();
   @Output() tagDelete = new EventEmitter<string>();
+  @Output() tagsLoaded = new EventEmitter<Tag[]>();
 
   @Input() entityId = '';
   @Input() entityType = 'memory';
@@ -61,6 +62,7 @@ export class TagManagerComponent implements OnChanges {
       .subscribe((tags) => {
         if (!tags) return;
         this.tags = tags;
+        this.tagsLoaded.emit(tags);
       });
   }
 

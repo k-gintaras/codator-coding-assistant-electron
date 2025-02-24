@@ -13,6 +13,8 @@ export class MemoryListComponent {
   @Output() forgetMemory: EventEmitter<Memory> = new EventEmitter<Memory>();
   @Output() focusMemory: EventEmitter<Memory> = new EventEmitter<Memory>();
   @Output() editMemory: EventEmitter<Memory> = new EventEmitter<Memory>();
+  @Output() deleteMemory: EventEmitter<Memory> = new EventEmitter<Memory>();
+  @Output() fuseMemories: EventEmitter<Memory[]> = new EventEmitter<Memory[]>();
   @Output() rememberDeepMemory: EventEmitter<Memory> =
     new EventEmitter<Memory>();
 
@@ -20,55 +22,63 @@ export class MemoryListComponent {
   @Input() memories: Memory[] = [];
   @Input() canForget = false;
   @Input() canFocus = false;
+  @Input() canDelete = false;
   @Input() canRememberDeep = false;
   @Input() title = 'Memories';
+
+  // Store selected memories for fusion
+  selectedMemories: Memory[] = [];
 
   getMemoryLimit(): number {
     if (!this.assistant) return 0; // no limit
     return this.assistant.memoryFocusRule.maxResults;
   }
 
-  // Determine if the memory exceeds the maxResults limit
   isMemoryExceeded(memory: Memory): boolean {
     if (!this.assistant) return false; // No assistant means no limit
     const memoryLimit = this.getMemoryLimit();
-
     if (memoryLimit <= 0) return false; // If limit is 0 or undefined, no memory is exceeded
-
-    // Get only the allowed memories within the limit
     const includedMemories = this.memories.slice(0, memoryLimit);
-
-    // Check if the given memory exists inside the includedMemories
     return !includedMemories.includes(memory);
   }
 
   isAllowedToRememberDeep(m: Memory): boolean {
     if (this.canRememberDeep) {
-      // is non instruction
       const isInstruction = m.type === 'instruction';
       const isOutDated = this.isMemoryFresh(m);
-
       const isInstructionOrNotAndOutdated =
         !isInstruction || (isInstruction && isOutDated);
-
       return isInstructionOrNotAndOutdated;
     }
     return false;
   }
 
-  // Determine if the memory is 'too fresh' (not yet added to instructions if it's of type 'instruction')
   isMemoryFresh(memory: Memory): boolean {
-    // Only check 'instruction' memories
     if (memory.type === 'instruction' && this.assistant) {
-      if (!memory.createdAt) return false; // If memory has no timestamp, assume it's not fresh
-
+      if (!memory.createdAt) return false;
       const memoryDate = new Date(memory.createdAt);
       const assistantUpdateDate = new Date(this.assistant.updatedAt);
-
-      return memoryDate > assistantUpdateDate; // Memory is fresh if it’s newer than last assistant update
+      return memoryDate > assistantUpdateDate;
     }
+    return false;
+  }
 
-    return false; // Non-instruction memories are NOT considered fresh
+  // Handle memory selection for fusion
+  toggleMemorySelection(memory: Memory) {
+    if (this.selectedMemories.includes(memory)) {
+      this.selectedMemories = this.selectedMemories.filter((m) => m !== memory);
+    } else {
+      this.selectedMemories.push(memory);
+    }
+  }
+
+  // Fusion of selected memories
+  fuseSelectedMemories() {
+    if (this.selectedMemories.length < 2) {
+      return;
+    }
+    this.fuseMemories.emit(this.selectedMemories);
+    this.selectedMemories = [];
   }
 
   forget(memory: Memory) {
@@ -79,6 +89,11 @@ export class MemoryListComponent {
   focus(memory: Memory) {
     if (!this.canFocus) return;
     this.focusMemory.emit(memory);
+  }
+
+  deleteM(memory: Memory) {
+    if (!this.canDelete) return;
+    this.deleteMemory.emit(memory);
   }
 
   rememberDeep(memory: Memory) {
