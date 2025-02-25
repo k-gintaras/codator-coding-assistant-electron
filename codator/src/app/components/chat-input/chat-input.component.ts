@@ -13,6 +13,7 @@ import {
   Assistant,
   AssistantFull,
 } from '../../services/assistants-api/assistant.service';
+import { WarnService } from '../../services/warn.service';
 
 @Component({
   selector: 'app-chat-input',
@@ -33,7 +34,8 @@ export class ChatInputComponent {
     private inputService: InputService,
     private memoryService: MemoryService,
     private assistantService: AssistantService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private warnService: WarnService
   ) {
     // input assistant?
     if (!this.assistant) {
@@ -103,20 +105,33 @@ export class ChatInputComponent {
     const a = this.assistantFull;
     if (!a) return;
 
-    this.memoryService.rememberForConversation(a, this.correctionInput);
+    const r = await this.memoryService.rememberForConversation(
+      a,
+      this.correctionInput
+    );
+    if (r) this.warnService.warn('Saved Memory As Conversation');
   }
 
   async saveAssistantInstructions() {
     const a = this.assistantFull;
     if (!a) return;
 
-    this.memoryService.rememberAsInstructions(a, this.correctionInput);
+    const r = await this.memoryService.rememberAsInstructions(
+      a,
+      this.correctionInput
+    );
+    if (r) this.warnService.warn('Saved Memory As Instructions');
   }
 
   async saveForLaterUse() {
     const a = this.assistantFull;
     if (!a) return;
 
-    this.memoryService.rememberForLater(a, this.correctionInput);
+    const r = await this.memoryService.rememberForLater(
+      a,
+      this.correctionInput
+    );
+
+    if (r) this.warnService.warn('Saved Memory For Later Use');
   }
 }

@@ -53,6 +53,8 @@ export class PromptMessageService {
     this.promptService.prompt(assistantId, prompt, extraInstruction).subscribe({
       next: (response) => {
         this.saveResponseMessage(assistant, response);
+        console.log('prompt response');
+        console.log(response);
       },
       error: () => {
         this.saveErrorMessage(assistant);

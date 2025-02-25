@@ -7,7 +7,7 @@
         [ngClass]="{
           'bg-gray-600': message.type === 'request',
           'bg-teal-800': message.type === 'response',
-          'bg-gray-800': message.type === 'request-code',
+          'bg-gray-900': message.type === 'request-code',
           'bg-gray-700': message.type === 'response-code',
         }"
       >
@@ -33,7 +33,7 @@
               message.type !== 'response-code'
             "
           >
-            <p class="text-white">{{ message.content }}</p>
+            <app-format-text [rawText]="message.content"></app-format-text>
           </ng-container>
         </div>
 
@@ -44,6 +44,13 @@
             (click)="editMessage(message.content)"
           >
             Edit
+          </button>
+
+          <button
+            class="btn btn-xs bg-blue-800"
+            (click)="copyToClipboard(message.content)"
+          >
+            Copy
           </button>
         </div>
       </div>

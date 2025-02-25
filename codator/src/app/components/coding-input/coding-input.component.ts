@@ -23,12 +23,31 @@ export class CodingInputComponent implements OnDestroy {
         }
       });
   }
+  // ngOnChanges(changes: SimpleChanges): void {
+  //   if (changes['userCorrection']) {
+  //     this.adjustHeightManually();
+  //   }
+  // }
+
+  // adjustHeightManually(): void {
+  //   this.adjustHeight(); // Trigger height adjustment based on the current content
+  // }
 
   ngOnDestroy() {
     // Unsubscribe when the component is destroyed
     if (this.editRequestSubscription) {
       this.editRequestSubscription.unsubscribe();
     }
+  }
+
+  adjustHeight(): void {
+    const textarea = document.getElementById('editor') as HTMLTextAreaElement;
+
+    // Reset height to auto to calculate the scrollHeight correctly
+    textarea.style.height = 'auto';
+
+    // Set the height to the scrollHeight (the height of the content)
+    textarea.style.height = `${textarea.scrollHeight}px`;
   }
 
   onCorrectionChange() {
