@@ -118,7 +118,7 @@ export class MemoryService {
       const memoryResponse: Observable<AssistantsApiResponse | undefined> =
         this.http
           .get<AssistantsApiResponse>(
-            `${this.apiUrl}/memory-focus-rulerule/${id}`
+            `${this.apiUrl}/memory-focus-rule/rule/${id}`
           )
           .pipe(take(1));
 
@@ -411,7 +411,7 @@ export class MemoryService {
       // Step 1: Create the memory
       const memoryResponse: Observable<AssistantsApiResponse | undefined> =
         this.http
-          .post<AssistantsApiResponse>(`${this.apiUrl}/memory/`, {
+          .post<AssistantsApiResponse>(`${this.apiUrl}/memory`, {
             ...memoryData,
           })
           .pipe(take(1)); // Ensures we only take the first value from the observable
@@ -488,6 +488,12 @@ export class MemoryService {
       const updated = await this.updateAssistant(assistant);
       if (!updated) return false;
     }
+    return true;
+  }
+
+  async disconnect(assistant: AssistantFull, memory: Memory): Promise<boolean> {
+    const deletedOwned = await this.deleteOwnedMemory(assistant.id, memory.id);
+    if (!deletedOwned) return false;
     return true;
   }
 

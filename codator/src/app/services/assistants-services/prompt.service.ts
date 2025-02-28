@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ASSISTANT_API_CONFIG } from '../../app.constants';
 import { TEST_RESPONSE_FOR_CODE } from '../../test-other/response.test';
 
@@ -40,13 +40,13 @@ export class PromptService {
     prompt: string,
     extraInstruction?: string
   ): Observable<any> {
-    console.log('PromptService.prompt', assistantId, prompt, extraInstruction);
-    console.warn('Returning fake response for prompt');
-    return of({
-      status: 'success',
-      message: 'qq pewpew ',
-      data: TEST_RESPONSE_FOR_CODE,
-    });
-    // return this.sendPrompt(assistantId, prompt, extraInstruction);
+    // console.log('PromptService.prompt', assistantId, prompt, extraInstruction);
+    // console.warn('Returning fake response for prompt');
+    // return of({
+    //   status: 'success',
+    //   message: 'qq pewpew ',
+    //   data: TEST_RESPONSE_FOR_CODE,
+    // });
+    return this.sendPrompt(assistantId, prompt, extraInstruction);
   }
 }

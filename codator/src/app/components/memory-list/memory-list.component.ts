@@ -2,15 +2,18 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { AssistantFull } from '../../services/assistants-api/assistant.service';
 import { Memory } from '../../services/assistants-api/memory.service';
+import { FormatTextComponent } from '../format-text/format-text.component';
+import { CodeComponent } from '../code/code.component';
 
 @Component({
   selector: 'app-memory-list',
-  imports: [NgIf, NgFor],
+  imports: [NgIf, NgFor, FormatTextComponent, CodeComponent],
   templateUrl: './memory-list.component.html',
   styleUrl: './memory-list.component.scss',
 })
 export class MemoryListComponent {
   @Output() forgetMemory: EventEmitter<Memory> = new EventEmitter<Memory>();
+  @Output() disconnectMemory: EventEmitter<Memory> = new EventEmitter<Memory>();
   @Output() focusMemory: EventEmitter<Memory> = new EventEmitter<Memory>();
   @Output() editMemory: EventEmitter<Memory> = new EventEmitter<Memory>();
   @Output() deleteMemory: EventEmitter<Memory> = new EventEmitter<Memory>();
@@ -23,6 +26,7 @@ export class MemoryListComponent {
   @Input() canForget = false;
   @Input() canFocus = false;
   @Input() canDelete = false;
+  @Input() canDisconnect = false;
   @Input() canRememberDeep = false;
   @Input() title = 'Memories';
 
@@ -84,6 +88,11 @@ export class MemoryListComponent {
   forget(memory: Memory) {
     if (!this.canForget) return;
     this.forgetMemory.emit(memory);
+  }
+
+  disconnect(memory: Memory) {
+    if (!this.canDisconnect) return;
+    this.disconnectMemory.emit(memory);
   }
 
   focus(memory: Memory) {

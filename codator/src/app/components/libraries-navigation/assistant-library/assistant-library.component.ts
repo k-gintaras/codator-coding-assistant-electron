@@ -5,6 +5,11 @@ import { NgClass, NgFor } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Assistant } from '../../../services/assistants-api/assistant.service';
+import {
+  AssistantSuggestion,
+  OrchestratorService,
+  TaskRequest,
+} from '../../../services/assistants-api/orchestrator.service';
 
 @Component({
   selector: 'app-assistant-library',
@@ -14,11 +19,13 @@ import { Assistant } from '../../../services/assistants-api/assistant.service';
 })
 export class AssistantLibraryComponent implements OnInit {
   assistants: Assistant[] = [];
+  originalAssistants: Assistant[] = []; // Store the original list
   searchTerm = '';
   selectedAssistant: Assistant | null = null;
 
   constructor(
     private assistantService: AssistantService,
+    private orchestratorService: OrchestratorService, // Inject OrchestratorService
     private dialog: MatDialog,
     private router: Router
   ) {}
@@ -40,6 +47,7 @@ export class AssistantLibraryComponent implements OnInit {
     this.assistantService.getAllAssistants().subscribe(
       (response) => {
         this.assistants = response.data;
+        this.originalAssistants = response.data; // Store the original list
       },
       (error) => {
         console.error('Error fetching assistants:', error);
@@ -48,8 +56,38 @@ export class AssistantLibraryComponent implements OnInit {
   }
 
   onSearchChange(): void {
-    this.assistants = this.assistants.filter((assistant) =>
+    this.assistants = this.originalAssistants.filter((assistant) =>
       assistant.name.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
+  }
+
+  resetSearch(): void {
+    this.searchTerm = '';
+    this.assistants = [...this.originalAssistants]; // Reset to the original list
+  }
+
+  async fetchSuggestions(): Promise<void> {
+    const task: TaskRequest = {
+      type: '',
+      description: this.searchTerm,
+    };
+    const tags: string[] = []; // You can add tags as needed
+
+    const assistantsSuggestion: AssistantSuggestion[] =
+      await this.orchestratorService.suggestAssistants(task, tags);
+
+    const assistantsSuggested: Assistant[] = [];
+    for (const assistantSuggestion of assistantsSuggestion) {
+      const a = await this.assistantService.getFullAssistantByIdPromise(
+        assistantSuggestion.assistantId
+      );
+      if (a) {
+        assistantsSuggested.push(a);
+      }
+    }
+
+    this.assistants = assistantsSuggested;
+
+    console.log('Assistants suggestions:', assistantsSuggestion);
   }
 }

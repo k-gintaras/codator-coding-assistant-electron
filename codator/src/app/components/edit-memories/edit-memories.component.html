@@ -1,137 +1,184 @@
 <div class="max-w-5xl mx-auto m-10 p-6 bg-slate-500 rounded-lg shadow-lg">
   <h2 class="text-2xl font-bold text-center mb-4">Memory Management</h2>
-
-  <form (ngSubmit)="onSubmit()" #memoryForm="ngForm">
-    <div class="mb-4">
-      <label for="description" class="block text-sm font-medium text-gray-700">
-        Description
-      </label>
-      <textarea
-        id="description"
-        name="description"
-        [(ngModel)]="memory.description"
-        required
-        rows="3"
-        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        placeholder="Enter memory description"
-      ></textarea>
-    </div>
-
-    <div class="mb-4">
-      <label for="memoryType" class="block text-sm font-medium text-gray-700">
-        Memory Type
-      </label>
-      <select
-        id="memoryType"
-        name="memoryType"
-        [(ngModel)]="memory.type"
-        required
-        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      >
-        <option value="instruction">Instruction</option>
-        <option value="session">Session</option>
-        <option value="prompt">Prompt</option>
-        <option value="knowledge">Knowledge</option>
-        <option value="meta">Meta</option>
-      </select>
-    </div>
-
-    <div class="flex justify-between items-center">
-      <button
-        type="submit"
-        class="px-6 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      >
-        {{ memory.id !== "" ? "Update Memory" : "Create Assistant Memory" }}
-      </button>
-    </div>
-  </form>
-  <app-tag-manager
-    *ngIf="memory.id !== ''"
-    [entityId]="memory.id"
-    [entityType]="'memory'"
-  ></app-tag-manager>
-
-  <!-- Complex focus memories -->
-  <div *ngIf="assistant?.type === 'chat'">
-    <app-memory-list
-      [assistant]="assistant"
-      [memories]="assistantFocusMemories"
-      (forgetMemory)="forget($event)"
-      (editMemory)="edit($event)"
-      (fuseMemories)="fuse($event)"
-      [canForget]="true"
-      [canFocus]="false"
-      [title]="'Assistant Limited Focus'"
-    ></app-memory-list>
-    <div *ngIf="assistantFocusMemories.length"></div>
-  </div>
-  <div *ngIf="assistant?.type === 'assistant'">
-    <app-memory-list
-      [assistant]="assistant"
-      [memories]="focusedInstructions"
-      (forgetMemory)="forget($event)"
-      (editMemory)="edit($event)"
-      (rememberDeepMemory)="deepMemorize($event)"
-      (fuseMemories)="fuse($event)"
-      [canForget]="true"
-      [canFocus]="false"
-      [canRememberDeep]="true"
-      [title]="'Assistant Focus Instructions'"
-    ></app-memory-list>
-    <app-memory-list
-      [assistant]="assistant"
-      [memories]="focusedMemories"
-      (forgetMemory)="forget($event)"
-      (editMemory)="edit($event)"
-      (rememberDeepMemory)="deepMemorize($event)"
-      (fuseMemories)="fuse($event)"
-      [canForget]="true"
-      [canFocus]="false"
-      [canRememberDeep]="true"
-      [title]="'Assistant Focus Memories'"
-    ></app-memory-list>
-  </div>
-
-  <!-- Other memories -->
-  <app-memory-list
-    [memories]="ownedMemories"
-    (focusMemory)="focus($event)"
-    (editMemory)="edit($event)"
-    (fuseMemories)="fuse($event)"
-    (deleteMemory)="deleteMemory($event)"
-    [canDelete]="true"
-    [canForget]="false"
-    [canFocus]="true"
-    [title]="'Owned Memories'"
-  ></app-memory-list>
-  <app-memory-list
-    [memories]="similarMemories"
-    (focusMemory)="focus($event)"
-    (editMemory)="edit($event)"
-    (fuseMemories)="fuse($event)"
-    [canForget]="false"
-    [canFocus]="true"
-    [title]="'Similar Memories'"
-  ></app-memory-list>
-
-  <!-- Temporary Memories -->
-  <div *ngIf="temporaryMemories.length">
-    <h3 class="text-xl font-bold mt-6">Temporary Memories</h3>
-    <ul>
-      <li
-        *ngFor="let memory of temporaryMemories"
-        class="bg-gray-400 p-2 rounded-lg mb-2"
-      >
-        <p class="text-gray-800"><strong>Description:</strong> {{ memory }}</p>
-        <p class="text-sm text-gray-600"><strong>Type:</strong> local</p>
-
+  <!-- Memory Optimization Section - New Addition -->
+  <div *ngIf="assistant" class="mb-6 bg-slate-600 p-4 rounded-lg">
+    <!-- <div class="flex justify-between items-center">
+      <h3 class="text-lg font-semibold">Memory Optimization</h3>
+      <div>
         <button
-          (click)="createAndFocus(memory)"
-          class="bg-green-500 text-white rounded-md p-2"
+          (click)="optimizeMemories()"
+          class="btn bg-blue-600 hover:bg-blue-700 text-white"
+          [disabled]="isOptimizing"
         >
-          Focus
+          <span *ngIf="!isOptimizing">
+            <span class="mr-2">🧠</span>Optimize Memory Configuration
+          </span>
+          <span *ngIf="isOptimizing" class="flex items-center">
+            <span class="loading loading-spinner loading-sm mr-2"></span>
+            Optimizing...
+          </span>
         </button>
-      </li>
-    </ul>
+        <button
+          [routerLink]="['/test-assistant-memory', assistant.id]"
+          class="btn btn-outline ml-2"
+        >
+          Run Memory Test
+        </button>
+      </div>
+    </div> -->
+
+    <!-- <p class="text-sm mt-2">
+      Optimize your assistant's memory configuration based on test results. This
+      will adjust the maximum number of memories to the optimal level and
+      prioritize the most effective memories.
+    </p> -->
+    <!-- 
+    <div
+      *ngIf="optimizationMessage"
+      class="mt-4 p-3 bg-blue-800 rounded-lg text-white"
+    >
+      {{ optimizationMessage }}
+    </div> -->
+
+    <form (ngSubmit)="onSubmit()" #memoryForm="ngForm">
+      <div class="mb-4">
+        <label
+          for="description"
+          class="block text-sm font-medium text-gray-700"
+        >
+          Description
+        </label>
+        <textarea
+          id="description"
+          name="description"
+          [(ngModel)]="memory.description"
+          required
+          rows="3"
+          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="Enter memory description"
+        ></textarea>
+      </div>
+
+      <div class="mb-4">
+        <label for="memoryType" class="block text-sm font-medium text-gray-700">
+          Memory Type
+        </label>
+        <select
+          id="memoryType"
+          name="memoryType"
+          [(ngModel)]="memory.type"
+          required
+          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="instruction">Instruction</option>
+          <option value="session">Session</option>
+          <option value="prompt">Prompt</option>
+          <option value="knowledge">Knowledge</option>
+          <option value="meta">Meta</option>
+        </select>
+      </div>
+
+      <div class="flex justify-between items-center">
+        <button
+          type="submit"
+          class="px-6 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          {{ memory.id !== "" ? "Update Memory" : "Create Assistant Memory" }}
+        </button>
+      </div>
+    </form>
+    <app-tag-manager
+      *ngIf="memory.id !== ''"
+      [entityId]="memory.id"
+      [entityType]="'memory'"
+    ></app-tag-manager>
+
+    <!-- Complex focus memories -->
+    <div *ngIf="assistant?.type === 'chat'">
+      <app-memory-list
+        [assistant]="assistant"
+        [memories]="assistantFocusMemories"
+        (forgetMemory)="forget($event)"
+        (editMemory)="edit($event)"
+        (fuseMemories)="fuse($event)"
+        [canForget]="true"
+        [canFocus]="false"
+        [title]="'Assistant Limited Focus'"
+      ></app-memory-list>
+      <div *ngIf="assistantFocusMemories.length"></div>
+    </div>
+    <div *ngIf="assistant?.type === 'assistant'">
+      <app-memory-list
+        [assistant]="assistant"
+        [memories]="focusedInstructions"
+        (forgetMemory)="forget($event)"
+        (editMemory)="edit($event)"
+        (rememberDeepMemory)="deepMemorize($event)"
+        (fuseMemories)="fuse($event)"
+        [canForget]="true"
+        [canFocus]="false"
+        [canRememberDeep]="true"
+        [title]="'Assistant Focus Instructions'"
+      ></app-memory-list>
+      <app-memory-list
+        [assistant]="assistant"
+        [memories]="focusedMemories"
+        (forgetMemory)="forget($event)"
+        (editMemory)="edit($event)"
+        (rememberDeepMemory)="deepMemorize($event)"
+        (fuseMemories)="fuse($event)"
+        [canForget]="true"
+        [canFocus]="false"
+        [canRememberDeep]="true"
+        [title]="'Assistant Focus Memories'"
+      ></app-memory-list>
+    </div>
+
+    <!-- Other memories -->
+    <app-memory-list
+      [memories]="ownedMemories"
+      (focusMemory)="focus($event)"
+      (editMemory)="edit($event)"
+      (fuseMemories)="fuse($event)"
+      (deleteMemory)="deleteMemory($event)"
+      (disconnectMemory)="disconnectMemory($event)"
+      [canDelete]="true"
+      [canForget]="false"
+      [canFocus]="true"
+      [canDisconnect]="true"
+      [title]="'Owned Memories'"
+    ></app-memory-list>
+    <app-memory-list
+      [memories]="similarMemories"
+      (focusMemory)="focus($event)"
+      (editMemory)="edit($event)"
+      (fuseMemories)="fuse($event)"
+      [canForget]="false"
+      [canFocus]="true"
+      [title]="'Similar Memories'"
+    ></app-memory-list>
+
+    <!-- Temporary Memories -->
+    <div *ngIf="temporaryMemories.length">
+      <h3 class="text-xl font-bold mt-6">Temporary Memories</h3>
+      <ul>
+        <li
+          *ngFor="let memory of temporaryMemories"
+          class="bg-gray-400 p-2 rounded-lg mb-2"
+        >
+          <p class="text-gray-800">
+            <strong>Description:</strong> {{ memory }}
+          </p>
+          <p class="text-sm text-gray-600"><strong>Type:</strong> local</p>
+
+          <button
+            (click)="createAndFocus(memory)"
+            class="bg-green-500 text-white rounded-md p-2"
+          >
+            Focus
+          </button>
+        </li>
+      </ul>
+    </div>
   </div>
 </div>

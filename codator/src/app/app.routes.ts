@@ -3,6 +3,7 @@ import { ChatAreaComponent } from './components/chat-area/chat-area.component';
 import { CreateFunctionComponent } from './components/create-function/create-function.component';
 import { EditAssistantComponent } from './components/edit-assistant/edit-assistant.component';
 import { EditMemoryComponent } from './components/edit-memory/edit-memory.component';
+import { AssistantMemoryTesterComponent } from './features/assistant-memory-tester.component';
 
 export const routes: Routes = [
   { path: '', component: ChatAreaComponent },
@@ -18,4 +19,10 @@ export const routes: Routes = [
   // memories
   { path: 'edit-memory/:id', component: EditMemoryComponent },
   { path: 'create-memory', component: EditMemoryComponent },
+  // memory testing
+  {
+    path: 'test-assistant-memory/:id',
+    component: AssistantMemoryTesterComponent,
+  },
+  { path: 'test-assistant-memory', component: AssistantMemoryTesterComponent },
 ];

@@ -11,11 +11,13 @@ import {
   MemoryWithTags,
 } from '../../services/assistants-api/memory.service';
 import { PROMPT_SEPARATOR } from '../../app.constants';
+import { MemoryOptimizerService } from '../../features/memory-optimizer.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   standalone: true,
   selector: 'app-edit-memories',
-  imports: [NgFor, NgIf, FormsModule, MemoryListComponent, TagManagerComponent],
+  imports: [NgFor, NgIf, FormsModule, MemoryListComponent, TagManagerComponent, RouterLink],
   templateUrl: './edit-memories.component.html',
   styleUrl: './edit-memories.component.scss',
 })
@@ -38,15 +40,53 @@ export class EditMemoriesComponent implements OnChanges {
   similarMemories: Memory[] = [];
   canReloadMemories = true;
 
+  // New properties for memory optimization
+  isOptimizing = false;
+  optimizationMessage: string | null = null;
+
   constructor(
     private memoryService: MemoryService,
-    private warnService: WarnService
+    private warnService: WarnService,
+    private memoryOptimizer: MemoryOptimizerService
   ) {}
   ngOnChanges(changes: SimpleChanges): void {
     // when assistant changes, it just changes, it doesnt tell to reload memories, we have to do manually
     // ng on init doesnt know when assistant changed unless we RECREATE whole component
     if (changes['assistant']) {
       this.loadMemories();
+    }
+  }
+
+  async optimizeMemories(): Promise<void> {
+    if (!this.assistant) return;
+
+    this.isOptimizing = true;
+    this.optimizationMessage = 'Running memory optimization...';
+
+    try {
+      const result = await this.memoryOptimizer.optimizeMemoryConfiguration(
+        this.assistant
+      );
+
+      if (result) {
+        this.optimizationMessage = `Memory configuration optimized successfully. Memory limit set to optimal value.`;
+        this.loadMemories(); // Reload memories to show updated order
+      } else {
+        this.optimizationMessage =
+          'Memory test in progress. Please run optimization again after testing completes.';
+      }
+    } catch (error) {
+      console.error('Error optimizing memories:', error);
+      this.warnService.warn('Error optimizing memory configuration');
+      this.optimizationMessage =
+        'Failed to optimize memory configuration. Please try again.';
+    } finally {
+      this.isOptimizing = false;
+
+      // Clear the optimization message after a delay
+      setTimeout(() => {
+        this.optimizationMessage = null;
+      }, 8000);
     }
   }
 
@@ -206,7 +246,7 @@ export class EditMemoriesComponent implements OnChanges {
     };
     if (!this.assistant) return;
     this.memoryService.createLongMemory(this.assistant, m, true).then((ok) => {
-      console.log('Created and Focused:', ok);
+      if (!ok) return;
       this.warnService.warn('Created and Focused');
       this.reloadMemories();
     });
@@ -217,9 +257,19 @@ export class EditMemoriesComponent implements OnChanges {
     if (!this.assistant) return;
     const removed = await this.memoryService.forgetDeep(this.assistant, m);
     this.warnService.warn('Memory Forgotten');
-    this.reloadMemories();
-
     if (!removed) return;
+
+    this.reloadMemories();
+  }
+
+  async disconnectMemory(m: Memory) {
+    if (!m.id) return;
+    if (!this.assistant) return;
+    const removed = await this.memoryService.disconnect(this.assistant, m);
+    if (!removed) return;
+
+    this.warnService.warn('Memory Disconnected');
+    this.reloadMemories();
   }
 
   // Handle form submission for adding or updating memories
@@ -240,8 +290,6 @@ export class EditMemoriesComponent implements OnChanges {
 
   async fuse(m: Memory[]) {
     if (!this.assistant) return;
-    console.log('Fusing memories:', m);
-
     for (const memory of m) {
       await this.memoryService.forgetDeep(this.assistant, memory);
     }

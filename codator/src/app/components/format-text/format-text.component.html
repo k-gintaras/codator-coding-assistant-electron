@@ -1,4 +1,1 @@
-<!-- format-text.component.html -->
-<div class="w-full mx-auto mt-6 p-4 rounded-lg shadow-md">
-  <div [innerHTML]="formattedText"></div>
-</div>
+<div class="markdown" *ngIf="formattedText" [innerHTML]="formattedText"></div>

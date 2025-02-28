@@ -1,48 +1,39 @@
-import { Component, Input } from '@angular/core';
+import { NgIf } from '@angular/common';
+import { Component, Input, OnChanges, ViewEncapsulation } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
-// import showdown from 'showdown';
-// import { Remarkable } from 'remarkable';
 
 @Component({
+  standalone: true,
+  imports: [NgIf],
   selector: 'app-format-text',
-  imports: [],
   templateUrl: './format-text.component.html',
-  styleUrl: './format-text.component.scss',
+  styleUrls: ['./format-text.component.scss'],
+  encapsulation: ViewEncapsulation.None, // Disable Angular's Shadow DOM scoping
 })
-export class FormatTextComponent {
-  @Input() rawText = ''; // Receiving raw text input
+export class FormatTextComponent implements OnChanges {
+  @Input() rawText = '';
+  formattedText: SafeHtml | null = null;
 
-  // Process raw text and format it for display
-  get formattedText() {
-    const htmlContent = marked(this.rawText);
-    // const converter = new showdown.Converter();
-    // const htmlContent = converter.makeHtml(this.rawText);
-    // const md = new Remarkable();
-    // const htmlContent = md.render(this.rawText);
-
-    // const htmlContent = this.formatText(this.rawText);
-    return htmlContent;
+  constructor(private sanitizer: DomSanitizer) {
+    if (!sanitizer) {
+      throw new Error('DomSanitizer is not initialized.');
+    }
   }
 
-  private formatText(text: string): string {
-    // Step 1: Convert newlines into <br> elements
-    text = text.replace(/\n/g, '<br>');
+  async ngOnChanges() {
+    if (!this.rawText.trim()) {
+      this.formattedText = null;
+      return;
+    }
 
-    // Step 2: Handle multi-spaces or tabs
-    text = text.replace(
-      /\s{2,}/g,
-      (match) => `<span class="whitespace-pre">${match}</span>`
-    );
-
-    // Step 3: Convert bullet lists (starting with * or -)
-    text = text.replace(/^(?:\*|-)\s*(.*)$/gm, '<ul><li>$1</li></ul>');
-
-    // Step 4: Convert numbered lists (starting with 1., 2., etc.)
-    text = text.replace(/^\d+\.\s*(.*)$/gm, '<ol><li>$1</li></ol>');
-
-    // Step 5: Convert text to paragraphs
-    text = text.replace(/(.*?)(<br>|\n)/g, '<p class="text-white">$1</p>');
-
-    return text;
+    try {
+      // Ensure marked.parse() is awaited properly
+      const html = await marked.parse(this.rawText);
+      this.formattedText = this.sanitizer.bypassSecurityTrustHtml(html);
+    } catch (error) {
+      console.error('Error processing markdown:', error);
+      this.formattedText = null; // Fallback to avoid breaking the UI
+    }
   }
 }

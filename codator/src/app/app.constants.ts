@@ -19,6 +19,10 @@ export const ASSISTANT_API_CONFIG = {
   promptUrl: '/prompt',
 };
 
+export const APP_STATE = {
+  testing: false,
+};
+
 /**
  * this is used to separate different ideas in one prompt, often it is # or ### or ... or <3
  */

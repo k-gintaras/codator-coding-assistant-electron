@@ -16,7 +16,11 @@
     >
       <div class="flex justify-between items-center">
         <p class="text-gray-400 text-sm">
-          <strong>Description:</strong> {{ memory.description }}
+          <!-- <strong>Description:</strong> {{ memory.description }} -->
+          <app-format-text
+            *ngIf="memory.description"
+            [rawText]="memory.description"
+          ></app-format-text>
         </p>
         <p class="text-xs text-gray-500">
           <strong>Type:</strong> {{ memory.type }}
@@ -25,7 +29,8 @@
 
       <!-- Display data if it exists -->
       <div *ngIf="memory.data" class="text-xs text-gray-500 mt-1">
-        <strong>Data:</strong> {{ memory.data }}
+        <!-- <strong>Data:</strong> {{ memory.data }} -->
+        <app-code *ngIf="memory.data" [code]="memory.data"></app-code>
       </div>
 
       <!-- Buttons Row (Horizontal Layout) -->
@@ -68,6 +73,13 @@
           class="bg-gray-600 hover:bg-gray-700 text-white rounded-md text-xs p-1 w-20 transition duration-150"
         >
           Delete
+        </button>
+        <button
+          *ngIf="canDisconnect"
+          (click)="disconnect(memory)"
+          class="bg-gray-600 hover:bg-gray-700 text-white rounded-md text-xs p-1 w-20 transition duration-150"
+        >
+          Disconnect
         </button>
         <!-- Memory selection and fusion -->
         <div class="flex justify-start gap-2 mt-2">

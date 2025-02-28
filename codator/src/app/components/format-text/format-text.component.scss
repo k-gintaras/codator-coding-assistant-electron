@@ -1,0 +1,50 @@
+.markdown p {
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.markdown ul {
+  margin-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.markdown ol {
+  margin-left: 1.5rem;
+  list-style-type: decimal;
+}
+
+.markdown li {
+  margin-bottom: 0.5rem;
+}
+
+.markdown h1 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.markdown h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+}
+
+.markdown h3 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.markdown blockquote {
+  border-left: 4px solid #ccc;
+  padding-left: 1rem;
+  color: #666;
+  font-style: italic;
+}
+
+.markdown code {
+  background-color: #f4f4f4;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: monospace;
+}

@@ -15,6 +15,9 @@
     class="input input-bordered input-sm w-full mb-4"
     placeholder="Search assistants..."
   />
+  <button (click)="fetchSuggestions()" class="btn btn-sm flex items-center">
+    <span>Suggest</span>
+  </button>
 
   <div class="overflow-auto max-h-60">
     <!-- Scrollable container -->
