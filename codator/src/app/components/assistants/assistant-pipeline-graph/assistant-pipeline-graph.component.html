@@ -1,0 +1,92 @@
+<div class="graph-container relative" [class.bg-base-200]="true">
+  <div class="absolute top-4 left-4 z-10">
+    <div
+      class="tooltip"
+      [attr.data-tip]="'Drag to move the graph'"
+      *ngIf="nodes.length > 0"
+    >
+      <button class="btn btn-circle btn-sm">
+        <i class="fa fa-arrows-alt"></i>
+        🔄
+      </button>
+    </div>
+    <div
+      class="tooltip"
+      [attr.data-tip]="'Reset zoom'"
+      *ngIf="nodes.length > 0"
+    >
+      <button class="btn btn-circle btn-sm ml-2" (click)="resetZoom()">
+        <i class="fa fa-search"></i>
+        🔍
+      </button>
+    </div>
+  </div>
+
+  <div class="absolute top-4 right-4 z-10" *ngIf="selectedNode">
+    <div class="card bg-base-100 shadow-xl w-64">
+      <div class="card-body p-4">
+        <h3 class="card-title text-sm">{{ selectedNode.name }}</h3>
+        <p class="text-xs">ID: {{ selectedNode.id }}</p>
+        <div class="card-actions justify-end mt-2">
+          <button
+            class="btn btn-xs btn-primary"
+            (click)="selectAsSource(selectedNode)"
+          >
+            Source
+          </button>
+          <button
+            class="btn btn-xs btn-secondary"
+            (click)="selectAsTarget(selectedNode)"
+          >
+            Target
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="absolute bottom-4 left-4 right-4 z-10"
+    *ngIf="sourceNode || targetNode"
+  >
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body p-4">
+        <div class="flex items-center justify-between">
+          <div class="w-5/12">
+            <span class="label-text">Source:</span>
+            <div class="badge badge-primary badge-lg" *ngIf="sourceNode">
+              {{ sourceNode.name }}
+            </div>
+            <span *ngIf="!sourceNode">Not selected</span>
+          </div>
+
+          <div class="w-2/12 flex justify-center">
+            <span class="text-xl font-bold">→</span>
+          </div>
+
+          <div class="w-5/12">
+            <span class="label-text">Target:</span>
+            <div class="badge badge-secondary badge-lg" *ngIf="targetNode">
+              {{ targetNode.name }}
+            </div>
+            <span *ngIf="!targetNode">Not selected</span>
+          </div>
+        </div>
+
+        <div class="card-actions justify-center mt-3">
+          <button
+            class="btn btn-sm btn-success"
+            (click)="createConnection()"
+            [disabled]="!sourceNode || !targetNode"
+          >
+            Connect
+          </button>
+          <button class="btn btn-sm btn-error" (click)="clearSelection()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <svg height="600" #svg class="w-full h-full"></svg>
+</div>

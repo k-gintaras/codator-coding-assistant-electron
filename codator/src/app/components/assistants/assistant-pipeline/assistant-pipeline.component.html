@@ -1,0 +1,241 @@
+<div class="container mx-auto px-4 py-6">
+  <h2 class="text-2xl font-bold mb-6">Assistant Pipeline Builder</h2>
+
+  <div class="tabs tabs-boxed mb-6">
+    <button
+      class="tab"
+      [class.tab-active]="activeTab === 'graph'"
+      (click)="setActiveTab('graph')"
+    >
+      Graph View
+    </button>
+    <button
+      class="tab"
+      [class.tab-active]="activeTab === 'form'"
+      (click)="setActiveTab('form')"
+    >
+      Form View
+    </button>
+  </div>
+
+  <!-- Graph View -->
+  <div *ngIf="activeTab === 'graph'" class="mb-6">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h3 class="card-title">Interactive Pipeline Graph</h3>
+        <p class="text-sm mb-4">
+          Click on a node to select an assistant. Right-click on a link to
+          delete a connection. Drag nodes to rearrange the graph.
+        </p>
+
+        <app-assistant-pipeline-graph
+          [assistants]="assistants"
+          [connections]="connections"
+        ></app-assistant-pipeline-graph>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form View -->
+  <div *ngIf="activeTab === 'form'">
+    <!-- Create Connection Card -->
+    <div class="card bg-base-100 shadow-xl mb-6">
+      <div class="card-body">
+        <h3 class="card-title">Create Connection</h3>
+
+        <div class="flex flex-col md:flex-row items-center gap-4">
+          <div class="w-full md:w-5/12">
+            <span class="label-text">Source Assistant:</span>
+            <select
+              class="select select-bordered w-full"
+              [(ngModel)]="selectedSourceAssistant"
+            >
+              <option [value]="null">Select source assistant</option>
+              <option
+                *ngFor="let assistant of assistants"
+                [value]="assistant.id"
+              >
+                {{ assistant.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="w-full md:w-2/12 flex justify-center">
+            <span class="text-xl font-bold">→</span>
+          </div>
+
+          <div class="w-full md:w-5/12">
+            <span class="label-text">Target Assistant:</span>
+            <select
+              class="select select-bordered w-full"
+              [(ngModel)]="selectedTargetAssistant"
+            >
+              <option [value]="null">Select target assistant</option>
+              <option
+                *ngFor="let assistant of assistants"
+                [value]="assistant.id"
+              >
+                {{ assistant.name }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card-actions justify-center mt-4">
+          <button
+            class="btn btn-primary"
+            (click)="createConnection()"
+            [disabled]="!selectedSourceAssistant || !selectedTargetAssistant"
+          >
+            Connect Assistants
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connections Table Card -->
+    <div class="card bg-base-100 shadow-xl mb-6">
+      <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="card-title">Current Pipeline Connections</h3>
+          <button class="btn btn-sm btn-info" (click)="loadConnections()">
+            Refresh
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="table table-zebra w-full">
+            <thead>
+              <tr>
+                <th>Source Assistant</th>
+                <th>Target Assistant</th>
+                <th>Relationship</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let conn of connections">
+                <td>{{ getAssistantName(conn.sourceAssistantId) }}</td>
+                <td>{{ getAssistantName(conn.targetAssistantId) }}</td>
+                <td>{{ conn.relationshipType }}</td>
+                <td>
+                  <button
+                    class="btn btn-sm btn-error"
+                    (click)="deleteConnection(conn.id)"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="connections.length === 0">
+                <td colspan="4" class="text-center">No connections defined</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Execute Pipeline Card -->
+  <div class="card bg-base-100 shadow-xl mb-6">
+    <div class="card-body">
+      <h3 class="card-title">Execute Pipeline</h3>
+
+      <div class="form-control mb-4">
+        <span class="label-text mb-2">Start Assistant:</span>
+        <select
+          class="select select-bordered w-full"
+          [(ngModel)]="pipelineStartAssistant"
+        >
+          <option [value]="null">Select starting assistant</option>
+          <option *ngFor="let assistant of assistants" [value]="assistant.id">
+            {{ assistant.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-control mb-4">
+        <span class="label-text mb-2">Initial Input:</span>
+        <textarea
+          class="textarea textarea-bordered h-24"
+          [(ngModel)]="pipelineInput"
+        ></textarea>
+      </div>
+
+      <div class="card-actions justify-end">
+        <button
+          class="btn btn-success"
+          (click)="executePipeline()"
+          [disabled]="!pipelineStartAssistant || !pipelineInput || isExecuting"
+        >
+          {{ isExecuting ? "Executing..." : "Execute Pipeline" }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pipeline Results Card -->
+  <div class="card bg-base-100 shadow-xl" *ngIf="pipelineResult">
+    <div class="card-body">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="card-title">Pipeline Results</h3>
+        <span
+          [ngClass]="{
+            'text-success': pipelineResult.status === 'completed',
+            'text-error': pipelineResult.status === 'failed',
+            'text-warning': pipelineResult.status === 'running'
+          }"
+        >
+          Status: {{ pipelineResult.status }}
+        </span>
+      </div>
+
+      <div
+        *ngFor="let result of pipelineResult.results; let i = index"
+        class="mb-6 border border-base-300 rounded-lg overflow-hidden"
+      >
+        <div class="bg-base-200 p-3 border-b border-base-300">
+          <div class="flex justify-between items-center">
+            <strong
+              >Step {{ i + 1 }}:
+              {{ getAssistantName(result.assistantId) }}</strong
+            >
+            <span
+              [ngClass]="{
+                'text-success': result.status === 'completed',
+                'text-error': result.status === 'failed'
+              }"
+            >
+              ({{ result.status }})
+            </span>
+          </div>
+        </div>
+
+        <div class="p-4">
+          <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
+            <div class="md:col-span-3">
+              <h5 class="font-semibold mb-2">Input:</h5>
+              <pre
+                class="bg-base-200 p-3 rounded-lg overflow-x-auto max-h-48"
+                >{{ result.input }}</pre
+              >
+            </div>
+
+            <div class="flex justify-center items-center">
+              <span class="text-xl font-bold">→</span>
+            </div>
+
+            <div class="md:col-span-3">
+              <h5 class="font-semibold mb-2">Output:</h5>
+              <pre
+                class="bg-base-200 p-3 rounded-lg overflow-x-auto max-h-48"
+                >{{ result.output }}</pre
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+.graph-container {
+  width: 100%;
+  height: 600px;
+  border-radius: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.node {
+  cursor: pointer;
+}
+
+.link {
+  stroke-width: 2px;
+  stroke-opacity: 0.6;
+}
+
+.node text {
+  font-size: 12px;
+  pointer-events: none;
+}

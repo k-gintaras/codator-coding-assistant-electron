@@ -25,6 +25,12 @@
       <li *ngFor="let assistant of assistants">
         <div class="flex items-center justify-between">
           <button
+            class="btn btn-sm"
+            [routerLink]="['/edit-assistant', assistant.id]"
+          >
+            ✎
+          </button>
+          <button
             [routerLink]="['/chat-assistant', assistant.id]"
             routerLinkActive="bg-base-300"
             [ngClass]="{
@@ -34,13 +40,6 @@
             class="btn"
           >
             {{ assistant.name }}
-          </button>
-
-          <button
-            class="btn btn-sm"
-            [routerLink]="['/edit-assistant', assistant.id]"
-          >
-            ✎
           </button>
         </div>
       </li>

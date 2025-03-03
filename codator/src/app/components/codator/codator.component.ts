@@ -5,6 +5,7 @@ import { AssistantLibraryComponent } from '../libraries-navigation/assistant-lib
 import { FunctionLibraryComponent } from '../libraries-navigation/function-library/function-library.component';
 import { RouterOutlet } from '@angular/router';
 import { MemoryLibraryComponent } from '../libraries-navigation/memory-library/memory-library.component';
+import { NavigationLibraryComponent } from '../libraries-navigation/navigation-library/navigation-library.component';
 
 @Component({
   selector: 'app-codator',
@@ -15,6 +16,7 @@ import { MemoryLibraryComponent } from '../libraries-navigation/memory-library/m
     FunctionLibraryComponent,
     MemoryLibraryComponent,
     RouterOutlet,
+    NavigationLibraryComponent,
   ],
   templateUrl: './codator.component.html',
   styleUrl: './codator.component.scss',

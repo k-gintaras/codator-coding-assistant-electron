@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FunctionScript } from '../../interfaces/function-script.interface';
 import { FunctionLibraryService } from '../../services/function-library.service';
 import { FormsModule } from '@angular/forms';
-import { CodingComponent } from '../coding/coding.component';
+import { CodingComponent } from '../chat/coding/coding.component';
 import { NgIf } from '@angular/common';
 import { ActivatedRoute } from '@angular/router'; // For route params
 

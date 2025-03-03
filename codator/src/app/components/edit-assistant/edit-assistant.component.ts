@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AssistantService } from '../../services/assistants-services/assistant.service';
 import { BASE_MODEL } from '../../interfaces/gpt-api.model';
-import { EditMemoriesComponent } from '../edit-memories/edit-memories.component';
+import { EditMemoriesComponent } from '../memory/edit-memories/edit-memories.component';
 import { WarnService } from '../../services/warn.service';
 import { TagManagerComponent } from '../tag-manager/tag-manager.component';
 import { TagOLDService } from '../../services/tag.service';
