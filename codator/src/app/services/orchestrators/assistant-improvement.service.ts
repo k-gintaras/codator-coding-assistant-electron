@@ -175,6 +175,8 @@ Please format your response in a clear, structured way that separates different 
         data: { improvementSuggestions },
         createdAt: null,
         updatedAt: null,
+        name: null,
+        summary: null
       };
 
       // Create the memory and associate it with the assistant

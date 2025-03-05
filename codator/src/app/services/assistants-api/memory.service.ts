@@ -8,7 +8,9 @@ import { Tag } from './tag.service';
 
 export interface Memory {
   id: string;
-  type: 'instruction' | 'session' | 'prompt' | 'knowledge' | 'meta';
+  type: string; // e.g., "instruction", "session", "prompt", "knowledge", "meta"
+  name: string | null; // Nullable in the database
+  summary: string | null; // Nullable in the database
   description: string | null; // Nullable in the database
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any | null; // Nullable in the database

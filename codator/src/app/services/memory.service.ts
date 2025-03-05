@@ -111,7 +111,6 @@ export class MemoryService {
     }
   }
 
-  // TODO: !!! replace rulerule with rule/rule after API is updated
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getMemoryRule(id: string): Promise<any | null> {
     try {
@@ -306,6 +305,8 @@ export class MemoryService {
       data: null,
       createdAt: null,
       updatedAt: null,
+      name: null,
+      summary: null,
     };
     return m;
   }

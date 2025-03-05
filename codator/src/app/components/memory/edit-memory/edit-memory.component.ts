@@ -17,6 +17,71 @@ import { Tag } from '../../../services/assistants-api/tag.service';
   styleUrl: './edit-memory.component.scss',
 })
 export class EditMemoryComponent implements OnInit {
+  getDescriptionPlaceholder() {
+    const placeHolder = `memory format prompt format,
+To effectively structure prompts for GPT models, consider the following formatting techniques:
+
+Use of Delimiters: Clearly separate instructions from content using triple quotes (""") or hash symbols (###).
+help.openai.com
+
+Example:
+
+Summarize the text below as a bullet point list of the most important points.
+
+Text: """
+[Your text here]
+"""
+Clear Section Headings: Employ headings to define different parts of the prompt, enhancing readability.
+
+Example:
+
+**Task**: Generate a creative sentence inspired by the examples below.
+
+**Examples**:
+- Life is a journey, not a destination.
+- Every cloud has a silver lining.
+- The early bird catches the worm.
+Numbered or Bulleted Lists: Organize information using lists to present examples or instructions systematically.
+
+Example:
+
+**Instructions**:
+1. Read the following examples.
+2. Generate a new sentence inspired by them.
+
+**Examples**:
+- Actions speak louder than words.
+- A picture is worth a thousand words.
+- When in Rome, do as the Romans do.
+XML or JSON Formatting: For complex prompts, structure inputs using XML or JSON to define components explicitly.
+
+XML Example:
+
+xml
+Copy
+Edit
+<task>
+  <instruction>Create a new, creative sentence inspired by the following examples.</instruction>
+  <examples>
+    <example>Life is a journey, not a destination.</example>
+    <example>Every cloud has a silver lining.</example>
+    <example>The early bird catches the worm.</example>
+  </examples>
+</task>
+JSON Example:
+
+{
+  "instruction": "Create a new, creative sentence inspired by the following examples.",
+  "examples": [
+    "Life is a journey, not a destination.",
+    "Every cloud has a silver lining.",
+    "The early bird catches the worm."
+  ]
+}
+Implementing these formatting strategies can enhance the clarity of your prompts, leading to more accurate and relevant responses from GPT models.`;
+
+    return placeHolder;
+  }
   memory: Memory = {
     id: '',
     description: '',
@@ -24,6 +89,8 @@ export class EditMemoryComponent implements OnInit {
     createdAt: new Date(),
     updatedAt: new Date(),
     data: undefined,
+    name: null,
+    summary: null,
   };
   statusMessage: string | null = null;
   tags: string[] = [];

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import {
   AssistantFull,
   AssistantService,
@@ -22,7 +22,7 @@ export enum BrainRegion {
 @Component({
   selector: 'app-memory-brain-manager',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, FormsModule],
+  imports: [NgFor, NgIf, FormsModule],
   templateUrl: './memory-brain-management.component.html',
   styleUrl: './memory-brain-management.component.scss',
 })
@@ -438,16 +438,13 @@ export class MemoryBrainManagementComponent implements OnInit {
       // Create the memory
       const memory: Memory = {
         id: '',
-        type: this.newMemory.type as
-          | 'instruction'
-          | 'session'
-          | 'prompt'
-          | 'knowledge'
-          | 'meta',
+        type: this.newMemory.type,
         description: this.newMemory.description,
         data: null,
         createdAt: null,
         updatedAt: null,
+        name: null,
+        summary: null,
       };
 
       const memoryId = await this.memoryService.createMemory(memory);

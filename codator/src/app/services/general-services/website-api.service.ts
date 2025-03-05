@@ -9,7 +9,6 @@ export class WebsiteApiService implements ApiStrategy {
   constructor(private http: HttpClient) {}
 
   async processText(input: string): Promise<string> {
-    // TODO: or some other way to process text ONLINE...
     const result = await this.http
       .post<{ result: string }>(
         'https://<firebase-function-url>/process-text',

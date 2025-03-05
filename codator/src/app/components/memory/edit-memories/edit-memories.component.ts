@@ -30,6 +30,8 @@ export class EditMemoriesComponent implements OnChanges {
     createdAt: new Date(),
     updatedAt: new Date(),
     data: undefined,
+    name: null,
+    summary: null,
   };
   assistantFocusMemories: Memory[] = [];
   focusedInstructions: Memory[] = [];
@@ -242,6 +244,8 @@ export class EditMemoriesComponent implements OnChanges {
       data: undefined,
       createdAt: null,
       updatedAt: null,
+      name: null,
+      summary: null,
     };
     if (!this.assistant) return;
     this.memoryService.createLongMemory(this.assistant, m, true).then((ok) => {

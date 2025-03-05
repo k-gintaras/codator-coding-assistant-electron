@@ -8,7 +8,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgIf } from '@angular/common';
 import * as d3 from 'd3';
 import { PipelineConnection } from '../../../interfaces/assistant-pipeline.model';
 import { AssistantPipelineService } from '../../../services/orchestrators/assistant-pipeline.service';
@@ -36,7 +36,7 @@ interface Link extends d3.SimulationLinkDatum<Node> {
 
 @Component({
   standalone: true,
-  imports: [NgIf, NgFor, NgClass],
+  imports: [NgIf],
   selector: 'app-assistant-pipeline-graph',
   templateUrl: './assistant-pipeline-graph.component.html',
   styleUrls: ['./assistant-pipeline-graph.component.html'],

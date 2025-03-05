@@ -13,21 +13,54 @@
       {{ assistantId ? "Owned memory, assistant id: " + assistantId : "" }}
       {{ isFunctionMemory ? "Function memory" : "" }}
     </h3>
+
+    <!-- Name Field -->
+    <div class="mb-4">
+      <label for="name" class="block text-sm font-medium text-gray-700">
+        Memory Name
+      </label>
+      <input
+        id="name"
+        name="name"
+        [(ngModel)]="memory.name"
+        required
+        type="text"
+        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        placeholder="Enter memory name"
+      />
+    </div>
+
+    <!-- Summary Field (Previously Description) -->
+    <div class="mb-4">
+      <label for="summary" class="block text-sm font-medium text-gray-700">
+        Short Summary
+      </label>
+      <textarea
+        id="summary"
+        name="summary"
+        [(ngModel)]="memory.summary"
+        required
+        rows="1"
+        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        placeholder="Enter short summary"
+      ></textarea>
+    </div>
     <div class="mb-4">
       <label for="description" class="block text-sm font-medium text-gray-700">
-        Description
+        Text Content
       </label>
       <textarea
         id="description"
         name="description"
         [(ngModel)]="memory.description"
         required
-        rows="3"
+        rows="5"
         class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        placeholder="Enter memory description"
+        placeholder="{{ getDescriptionPlaceholder() }}"
       ></textarea>
     </div>
 
+    <!-- Data Section (For Function Memory) -->
     <div class="mb-4" *ngIf="isFunctionMemory && memory.data">
       <label for="data" class="block text-sm font-medium text-gray-700">
         Data
@@ -37,28 +70,25 @@
       </code>
     </div>
 
+    <!-- Memory Type Selection -->
     <div class="mb-4">
-      <label for="memoryType" class="block text-sm font-medium text-gray-700">
+      <label for="type" class="block text-sm font-medium text-gray-700">
         Memory Type
       </label>
-      <select
-        id="memoryType"
-        name="memoryType"
+      <input
+        id="type"
+        name="type"
         [(ngModel)]="memory.type"
         required
+        type="text"
         class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      >
-        <option value="instruction">Instruction</option>
-        <option value="session">Session</option>
-        <option value="prompt">Prompt</option>
-        <option value="knowledge">Knowledge</option>
-        <option value="meta">Meta</option>
-      </select>
+        placeholder="Enter memory type, e.g. instruction, session, prompt, knowledge, meta, function"
+      />
     </div>
 
+    <!-- Action Buttons -->
     <div class="flex justify-between items-center">
       <button
-        *ngIf="!isFunctionMemory"
         type="submit"
         class="px-6 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       >
@@ -81,6 +111,7 @@
 
   <!-- Tag Manager displayed only after memory is created -->
   <app-tag-manager
+    *ngIf="memory.id !== ''"
     [entityId]="memory.id"
     [entityType]="'memory'"
     (tagChange)="onTagChange($event)"
