@@ -317,6 +317,8 @@ export class MemoryBrainManagementComponent implements OnInit {
       // Handle different region moves
       switch (true) {
         // Moving to INSTRUCTION region
+        // TODO: update memory type for other types too... just for easier use
+        // instruction (focus memory instruction type), conversation (chat, thread, focus memory), reference (owned memory), disconnected (just memory), prompt (memory with type prompt?)
         case targetRegion === BrainRegion.INSTRUCTION:
           // Update memory type if needed
           if (memory.type !== 'instruction') {
@@ -401,6 +403,11 @@ export class MemoryBrainManagementComponent implements OnInit {
         // Add PROMPT region handling when implemented
         case targetRegion === BrainRegion.PROMPT:
           // This would require a custom implementation to prepend to prompts
+          // TODO: maybe update memory type= "prompt"
+          this.memoryService.rememberForSession(
+            this.selectedAssistant.id,
+            memory.description || ''
+          );
           this.warnService.warn('Prompt region not yet implemented');
           break;
       }
