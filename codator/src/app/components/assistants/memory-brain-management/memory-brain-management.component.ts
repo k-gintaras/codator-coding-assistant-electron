@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import {
@@ -6,18 +6,11 @@ import {
   AssistantService,
 } from '../../../services/assistants-api/assistant.service';
 import { Memory } from '../../../services/assistants-api/memory.service';
-import { MemoryService } from '../../../services/memory.service';
 import { TagOLDService } from '../../../services/tag.service';
 import { WarnService } from '../../../services/warn.service';
-
-// Memory brain regions for visualization and organization
-export enum BrainRegion {
-  INSTRUCTION = 'instruction', // Goes into system message
-  PROMPT = 'prompt', // Prepended to user prompt
-  CONVERSATION = 'conversation', // Added as message history
-  REFERENCE = 'reference', // Owned but not directly included
-  DISCONNECTED = 'disconnected', // Not connected to this assistant
-}
+import { Subject, takeUntil } from 'rxjs';
+import { BrainRegion } from '../../../interfaces/important-concepts';
+import { MemoryBrainService } from '../../../services/orchestrators/assistant-memory.service';
 
 @Component({
   selector: 'app-memory-brain-manager',
@@ -26,15 +19,12 @@ export enum BrainRegion {
   templateUrl: './memory-brain-management.component.html',
   styleUrl: './memory-brain-management.component.scss',
 })
-export class MemoryBrainManagementComponent implements OnInit {
+export class MemoryBrainManagementComponent implements OnInit, OnDestroy {
   // All assistants in the system
   assistants: AssistantFull[] = [];
 
   // Currently selected assistant
   selectedAssistant: AssistantFull | null = null;
-
-  // Available memories for connecting
-  availableMemories: Memory[] = [];
 
   // Search filters
   memorySearchText = '';
@@ -61,7 +51,7 @@ export class MemoryBrainManagementComponent implements OnInit {
   memoryTypes: string[] = [
     'instruction',
     'knowledge',
-    'session',
+    'conversation',
     'prompt',
     'meta',
   ];
@@ -77,16 +67,33 @@ export class MemoryBrainManagementComponent implements OnInit {
     brainRegion: BrainRegion.CONVERSATION,
   };
 
+  // For cleanup on destroy
+  private destroy$ = new Subject<void>();
+
   constructor(
     private assistantService: AssistantService,
-    private memoryService: MemoryService,
+    private memoryBrainService: MemoryBrainService,
     private tagService: TagOLDService,
     private warnService: WarnService
   ) {}
 
   async ngOnInit() {
+    // Subscribe to state changes from the service
+    this.memoryBrainService.state$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state) => {
+        this.selectedAssistant = state.assistant;
+        this.brainRegions = state.brainRegions;
+        this.isLoading = state.isLoading;
+      });
+
     await this.loadAssistants();
     await this.loadAllTags();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -120,101 +127,10 @@ export class MemoryBrainManagementComponent implements OnInit {
    * Select an assistant and load its connected memories
    */
   async selectAssistant(assistantId: string) {
-    this.isLoading = true;
-    this.selectedAssistant = null;
-    this.clearBrainRegions();
-
-    try {
-      const assistant = await this.assistantService.getAssistantWithDetailsById(
-        assistantId
-      );
-      if (assistant) {
-        this.selectedAssistant = assistant;
-        await this.loadAssistantMemories();
-        await this.loadAvailableMemories();
-      }
-    } catch (error) {
-      this.warnService.warn('Failed to load assistant details');
-      console.error('Error selecting assistant:', error);
-    } finally {
-      this.isLoading = false;
-    }
-  }
-
-  /**
-   * Clear all brain regions
-   */
-  clearBrainRegions() {
-    Object.keys(this.brainRegions).forEach((region) => {
-      this.brainRegions[region as BrainRegion] = [];
-    });
-  }
-
-  /**
-   * Load all memories connected to the selected assistant
-   */
-  async loadAssistantMemories() {
-    if (!this.selectedAssistant) return;
-
-    try {
-      // Load focused memories
-      const focusedMemories = this.selectedAssistant.focusedMemories || [];
-
-      // Sort memories by type and assign to brain regions
-      focusedMemories.forEach((memory) => {
-        if (memory.type === 'instruction') {
-          // Instructions go to the INSTRUCTION region
-          this.brainRegions[BrainRegion.INSTRUCTION].push(memory);
-        } else {
-          // Other focused memories go to CONVERSATION region
-          this.brainRegions[BrainRegion.CONVERSATION].push(memory);
-        }
-      });
-
-      // Load owned (but not focused) memories
-      const ownedMemories = await this.memoryService.getOwnedMemories(
-        this.selectedAssistant.id
-      );
-      const ownedNotFocused = ownedMemories.filter(
-        (ownedMemory) =>
-          !focusedMemories.some(
-            (focusedMemory) => focusedMemory.id === ownedMemory.id
-          )
-      );
-
-      // Assign to REFERENCE region
-      this.brainRegions[BrainRegion.REFERENCE] = ownedNotFocused;
-    } catch (error) {
-      this.warnService.warn('Failed to load assistant memories');
-      console.error('Error loading assistant memories:', error);
-    }
-  }
-
-  /**
-   * Load available memories that can be connected to the assistant
-   */
-  async loadAvailableMemories() {
-    try {
-      // Get all memories
-      const allMemories = await this.memoryService.getAllMemories();
-
-      // Filter out memories already connected to this assistant
-      const connectedMemoryIds = [
-        ...this.brainRegions[BrainRegion.INSTRUCTION].map((m) => m.id),
-        ...this.brainRegions[BrainRegion.CONVERSATION].map((m) => m.id),
-        ...this.brainRegions[BrainRegion.REFERENCE].map((m) => m.id),
-      ];
-
-      this.availableMemories = allMemories.filter(
-        (memory) => !connectedMemoryIds.includes(memory.id)
-      );
-
-      // These are disconnected memories
-      this.brainRegions[BrainRegion.DISCONNECTED] = this.availableMemories;
-    } catch (error) {
-      this.warnService.warn('Failed to load available memories');
-      console.error('Error loading available memories:', error);
-    }
+    await this.memoryBrainService.selectAssistant(
+      assistantId,
+      this.assistantService
+    );
   }
 
   /**
@@ -235,23 +151,11 @@ export class MemoryBrainManagementComponent implements OnInit {
    * Filter memories by search text and tags
    */
   filterMemories(memories: Memory[]): Memory[] {
-    if (!this.memorySearchText && this.selectedTags.length === 0) {
-      return memories;
-    }
-
-    return memories.filter((memory) => {
-      // Filter by search text
-      const matchesText =
-        !this.memorySearchText ||
-        memory.description
-          ?.toLowerCase()
-          .includes(this.memorySearchText.toLowerCase());
-
-      // Filter by tags if any are selected
-      // This would need to be implemented with your tag service
-      // For now, we'll just return the text match
-      return matchesText;
-    });
+    return this.memoryBrainService.filterMemories(
+      memories,
+      this.memorySearchText,
+      this.selectedTags
+    );
   }
 
   /**
@@ -291,7 +195,7 @@ export class MemoryBrainManagementComponent implements OnInit {
     if (sourceRegion === targetRegion) return;
 
     // Based on the source and target regions, perform different operations
-    await this.moveMemoryBetweenRegions(
+    await this.memoryBrainService.moveMemoryBetweenRegions(
       this.draggedMemory,
       sourceRegion,
       targetRegion
@@ -299,133 +203,6 @@ export class MemoryBrainManagementComponent implements OnInit {
 
     // Clear the dragged memory
     this.draggedMemory = null;
-  }
-
-  /**
-   * Move a memory between brain regions
-   */
-  async moveMemoryBetweenRegions(
-    memory: Memory,
-    sourceRegion: BrainRegion,
-    targetRegion: BrainRegion
-  ) {
-    if (!this.selectedAssistant) return;
-
-    this.isLoading = true;
-
-    try {
-      // Handle different region moves
-      switch (true) {
-        // Moving to INSTRUCTION region
-        // TODO: update memory type for other types too... just for easier use
-        // instruction (focus memory instruction type), conversation (chat, thread, focus memory), reference (owned memory), disconnected (just memory), prompt (memory with type prompt?)
-        case targetRegion === BrainRegion.INSTRUCTION:
-          // Update memory type if needed
-          if (memory.type !== 'instruction') {
-            const updatedMemory: Memory = { ...memory, type: 'instruction' };
-            await this.memoryService.updateMemory(updatedMemory);
-          }
-
-          // Connect to assistant if not already
-          if (sourceRegion === BrainRegion.DISCONNECTED) {
-            await this.memoryService.createOwnedMemory(
-              this.selectedAssistant.id,
-              memory.id
-            );
-          }
-
-          // Add to focused memories
-          await this.memoryService.createFocusedMemory(
-            this.selectedAssistant.memoryFocusRule.id,
-            memory.id
-          );
-          break;
-
-        // Moving to CONVERSATION region
-        case targetRegion === BrainRegion.CONVERSATION:
-          // Connect to assistant if not already
-          if (sourceRegion === BrainRegion.DISCONNECTED) {
-            await this.memoryService.createOwnedMemory(
-              this.selectedAssistant.id,
-              memory.id
-            );
-          }
-
-          // Add to focused memories
-          await this.memoryService.createFocusedMemory(
-            this.selectedAssistant.memoryFocusRule.id,
-            memory.id
-          );
-          break;
-
-        // Moving to REFERENCE region
-        case targetRegion === BrainRegion.REFERENCE:
-          // Connect to assistant if not already
-          if (sourceRegion === BrainRegion.DISCONNECTED) {
-            await this.memoryService.createOwnedMemory(
-              this.selectedAssistant.id,
-              memory.id
-            );
-          }
-
-          // Remove from focused memories if needed
-          if (
-            sourceRegion === BrainRegion.INSTRUCTION ||
-            sourceRegion === BrainRegion.CONVERSATION
-          ) {
-            await this.memoryService.deleteFocusedMemory(
-              this.selectedAssistant.memoryFocusRule.id,
-              memory.id
-            );
-          }
-          break;
-
-        // Moving to DISCONNECTED region
-        case targetRegion === BrainRegion.DISCONNECTED:
-          // Remove from focused memories if needed
-          if (
-            sourceRegion === BrainRegion.INSTRUCTION ||
-            sourceRegion === BrainRegion.CONVERSATION
-          ) {
-            await this.memoryService.deleteFocusedMemory(
-              this.selectedAssistant.memoryFocusRule.id,
-              memory.id
-            );
-          }
-
-          // Disconnect from assistant
-          await this.memoryService.deleteOwnedMemory(
-            this.selectedAssistant.id,
-            memory.id
-          );
-          break;
-
-        // Add PROMPT region handling when implemented
-        case targetRegion === BrainRegion.PROMPT:
-          // This would require a custom implementation to prepend to prompts
-          // TODO: maybe update memory type= "prompt"
-          this.memoryService.rememberForSession(
-            this.selectedAssistant.id,
-            memory.description || ''
-          );
-          this.warnService.warn('Prompt region not yet implemented');
-          break;
-      }
-
-      // Update local data structures
-      // Remove from source region
-      this.brainRegions[sourceRegion] = this.brainRegions[sourceRegion].filter(
-        (m) => m.id !== memory.id
-      );
-
-      // Add to target region
-      this.brainRegions[targetRegion].push(memory);
-    } catch (error) {
-      this.warnService.warn('Failed to move memory');
-      console.error('Error moving memory:', error);
-    } finally {
-      this.isLoading = false;
-    }
   }
 
   /**
@@ -439,70 +216,30 @@ export class MemoryBrainManagementComponent implements OnInit {
       return;
     }
 
-    this.isLoading = true;
+    // Create the memory
+    const memory: Memory = {
+      id: '',
+      type: this.newMemory.type,
+      description: this.newMemory.description,
+      data: null,
+      createdAt: null,
+      updatedAt: null,
+      name: null,
+      summary: null,
+    };
 
-    try {
-      // Create the memory
-      const memory: Memory = {
-        id: '',
-        type: this.newMemory.type,
-        description: this.newMemory.description,
-        data: null,
-        createdAt: null,
-        updatedAt: null,
-        name: null,
-        summary: null,
+    const success = await this.memoryBrainService.createMemory(
+      memory,
+      this.newMemory.brainRegion
+    );
+
+    if (success) {
+      // Reset the form
+      this.newMemory = {
+        description: '',
+        type: 'knowledge',
+        brainRegion: BrainRegion.CONVERSATION,
       };
-
-      const memoryId = await this.memoryService.createMemory(memory);
-
-      if (memoryId) {
-        // Get the created memory
-        const createdMemory = await this.memoryService.getMemory(memoryId);
-
-        if (createdMemory) {
-          // Add to the appropriate brain region
-          if (this.newMemory.brainRegion !== BrainRegion.DISCONNECTED) {
-            // Add the memory to the assistant
-            await this.memoryService.createOwnedMemory(
-              this.selectedAssistant.id,
-              memoryId
-            );
-
-            // If it should be a focused memory
-            if (
-              this.newMemory.brainRegion === BrainRegion.INSTRUCTION ||
-              this.newMemory.brainRegion === BrainRegion.CONVERSATION
-            ) {
-              await this.memoryService.createFocusedMemory(
-                this.selectedAssistant.memoryFocusRule.id,
-                memoryId
-              );
-            }
-
-            // Update local data structures
-            this.brainRegions[this.newMemory.brainRegion].push(createdMemory);
-          } else {
-            // Just add to available memories
-            this.availableMemories.push(createdMemory);
-            this.brainRegions[BrainRegion.DISCONNECTED].push(createdMemory);
-          }
-
-          // Reset the form
-          this.newMemory = {
-            description: '',
-            type: 'knowledge',
-            brainRegion: BrainRegion.CONVERSATION,
-          };
-
-          this.warnService.warn('Memory created successfully');
-        }
-      }
-    } catch (error) {
-      this.warnService.warn('Failed to create memory');
-      console.error('Error creating memory:', error);
-    } finally {
-      this.isLoading = false;
     }
   }
 
@@ -510,13 +247,7 @@ export class MemoryBrainManagementComponent implements OnInit {
    * Update an existing memory
    */
   async updateMemory(memory: Memory) {
-    try {
-      await this.memoryService.updateMemory(memory);
-      this.warnService.warn('Memory updated successfully');
-    } catch (error) {
-      this.warnService.warn('Failed to update memory');
-      console.error('Error updating memory:', error);
-    }
+    await this.memoryBrainService.updateMemory(memory);
   }
 
   /**
@@ -527,62 +258,7 @@ export class MemoryBrainManagementComponent implements OnInit {
       return;
     }
 
-    this.isLoading = true;
-
-    try {
-      // If connected to the assistant, disconnect first
-      if (this.selectedAssistant) {
-        // Check if it's a focused memory
-        const isFocused =
-          this.brainRegions[BrainRegion.INSTRUCTION].some(
-            (m) => m.id === memory.id
-          ) ||
-          this.brainRegions[BrainRegion.CONVERSATION].some(
-            (m) => m.id === memory.id
-          );
-
-        if (isFocused) {
-          await this.memoryService.deleteFocusedMemory(
-            this.selectedAssistant.memoryFocusRule.id,
-            memory.id
-          );
-        }
-
-        // Check if it's an owned memory
-        const isOwned =
-          this.brainRegions[BrainRegion.REFERENCE].some(
-            (m) => m.id === memory.id
-          ) || isFocused;
-
-        if (isOwned) {
-          await this.memoryService.deleteOwnedMemory(
-            this.selectedAssistant.id,
-            memory.id
-          );
-        }
-      }
-
-      // Delete the memory
-      await this.memoryService.deleteMemory(memory.id);
-
-      // Update local data structures
-      for (const region in this.brainRegions) {
-        this.brainRegions[region as BrainRegion] = this.brainRegions[
-          region as BrainRegion
-        ].filter((m) => m.id !== memory.id);
-      }
-
-      this.availableMemories = this.availableMemories.filter(
-        (m) => m.id !== memory.id
-      );
-
-      this.warnService.warn('Memory deleted successfully');
-    } catch (error) {
-      this.warnService.warn('Failed to delete memory');
-      console.error('Error deleting memory:', error);
-    } finally {
-      this.isLoading = false;
-    }
+    await this.memoryBrainService.deleteMemory(memory);
   }
 
   /**
