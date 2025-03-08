@@ -49,6 +49,9 @@ export class MemoryService {
     }
   }
 
+  // TODO:
+  // getMemoriesForAssistant;
+
   async getMemoriesByTags(tagNames: string[]): Promise<Memory[]> {
     try {
       const stringTags = tagNames.join(',');
