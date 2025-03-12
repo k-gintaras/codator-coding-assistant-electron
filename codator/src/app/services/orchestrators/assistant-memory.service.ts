@@ -3,6 +3,10 @@ import { BehaviorSubject } from 'rxjs';
 import { MemoryService } from '../memory.service';
 import { WarnService } from '../warn.service';
 import { Memory } from '../assistants-api/memory.service';
+import {
+  AssistantMemoryData,
+  AssistantMemoryService,
+} from '../assistants-api/assistant-memory.service';
 
 // Memory brain regions for organization
 export enum BrainRegion {
@@ -32,6 +36,7 @@ export class MemoryBrainService {
 
   constructor(
     private memoryService: MemoryService,
+    private assistantMemoryService: AssistantMemoryService,
     private warnService: WarnService
   ) {}
 
@@ -42,15 +47,8 @@ export class MemoryBrainService {
     assistantId: string
   ): Promise<Record<BrainRegion, Memory[]>> {
     try {
-      // TODO: assistant memories are:
-      // focused memories from assistant full
-      // assistant owned memories from owned memories
-      // maybe memories by tag = assistant id...
-      // do we add server side
-      // or do we add client side
-      const allMemories = await this.memoryService.getMemoriesForAssistant(
-        assistantId
-      );
+      const allMemories: AssistantMemoryData | null =
+        await this.assistantMemoryService.getAllAssistMemories(assistantId);
       const brainRegions: Record<BrainRegion, Memory[]> = {
         [BrainRegion.INSTRUCTION]: [],
         [BrainRegion.PROMPT]: [],
@@ -58,6 +56,38 @@ export class MemoryBrainService {
         [BrainRegion.REFERENCE]: [],
         [BrainRegion.DISCONNECTED]: [],
       };
+
+      // TODO: decide what it means for focused memory to be instruction and for related memory to be instruction... we cant just put them in instruction
+
+      const focusedMemories = allMemories?.focused ?? [];
+      const ownedMemories = allMemories?.owned ?? [];
+      const relatedMemories = allMemories?.related ?? [];
+      // owned and related are basically the same
+
+      // these are either instruction or conversation
+      focusedMemories.forEach((memory) => {
+        switch (memory.type) {
+          case BrainRegion.INSTRUCTION:
+            brainRegions[BrainRegion.INSTRUCTION].push(memory);
+            break;
+          case BrainRegion.PROMPT:
+            brainRegions[BrainRegion.PROMPT].push(memory);
+            break;
+          default:
+            brainRegions[BrainRegion.CONVERSATION].push(memory);
+        }
+      });
+
+      // these are just reference
+      focusedMemories.forEach((memory) => {
+        switch (memory.type) {
+          case BrainRegion.INSTRUCTION:
+            brainRegions[BrainRegion.INSTRUCTION].push(memory);
+            break;
+          default:
+            brainRegions[BrainRegion.CONVERSATION].push(memory);
+        }
+      });
 
       allMemories.forEach((memory) => {
         switch (memory.type) {
