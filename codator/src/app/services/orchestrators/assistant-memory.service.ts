@@ -7,14 +7,14 @@ import {
   AssistantMemoryData,
   AssistantMemoryService,
 } from '../assistants-api/assistant-memory.service';
+import { FocusedMemoryService } from '../assistants-api/memory-focus.service';
 
 // Memory brain regions for organization
 export enum BrainRegion {
   INSTRUCTION = 'instruction',
   PROMPT = 'prompt',
   CONVERSATION = 'conversation',
-  REFERENCE = 'reference',
-  DISCONNECTED = 'disconnected',
+  DEACTIVATED = 'reference',
 }
 
 @Injectable({
@@ -25,8 +25,7 @@ export class MemoryBrainService {
     [BrainRegion.INSTRUCTION]: [],
     [BrainRegion.PROMPT]: [],
     [BrainRegion.CONVERSATION]: [],
-    [BrainRegion.REFERENCE]: [],
-    [BrainRegion.DISCONNECTED]: [],
+    [BrainRegion.DEACTIVATED]: [],
   };
 
   private stateSubject = new BehaviorSubject<Record<BrainRegion, Memory[]>>(
@@ -37,7 +36,8 @@ export class MemoryBrainService {
   constructor(
     private memoryService: MemoryService,
     private assistantMemoryService: AssistantMemoryService,
-    private warnService: WarnService
+    private warnService: WarnService,
+    private focusedMemoryService: FocusedMemoryService
   ) {}
 
   /**
@@ -53,15 +53,13 @@ export class MemoryBrainService {
         [BrainRegion.INSTRUCTION]: [],
         [BrainRegion.PROMPT]: [],
         [BrainRegion.CONVERSATION]: [],
-        [BrainRegion.REFERENCE]: [],
-        [BrainRegion.DISCONNECTED]: [],
+        [BrainRegion.DEACTIVATED]: [],
       };
-
-      // TODO: decide what it means for focused memory to be instruction and for related memory to be instruction... we cant just put them in instruction
 
       const focusedMemories = allMemories?.focused ?? [];
       const ownedMemories = allMemories?.owned ?? [];
       const relatedMemories = allMemories?.related ?? [];
+      const deactivatedMemories = [...ownedMemories, ...relatedMemories];
       // owned and related are basically the same
 
       // these are either instruction or conversation
@@ -78,34 +76,9 @@ export class MemoryBrainService {
         }
       });
 
-      // these are just reference
-      focusedMemories.forEach((memory) => {
-        switch (memory.type) {
-          case BrainRegion.INSTRUCTION:
-            brainRegions[BrainRegion.INSTRUCTION].push(memory);
-            break;
-          default:
-            brainRegions[BrainRegion.CONVERSATION].push(memory);
-        }
-      });
-
-      allMemories.forEach((memory) => {
-        switch (memory.type) {
-          case BrainRegion.INSTRUCTION:
-            brainRegions[BrainRegion.INSTRUCTION].push(memory);
-            break;
-          case BrainRegion.PROMPT:
-            brainRegions[BrainRegion.PROMPT].push(memory);
-            break;
-          case BrainRegion.CONVERSATION:
-            brainRegions[BrainRegion.CONVERSATION].push(memory);
-            break;
-          case BrainRegion.REFERENCE:
-            brainRegions[BrainRegion.REFERENCE].push(memory);
-            break;
-          default:
-            brainRegions[BrainRegion.DISCONNECTED].push(memory);
-        }
+      // these are just reference, owned or related, deactivated
+      deactivatedMemories.forEach((memory) => {
+        brainRegions[BrainRegion.DEACTIVATED].push(memory);
       });
 
       this.updateState(brainRegions);
@@ -118,7 +91,8 @@ export class MemoryBrainService {
   }
 
   /**
-   * Move a memory between brain regions and update its type accordingly.
+   * TODO: when we move to deactivated, we use memory activation service and move to that region
+   * TODO: when we move to activated (instruction, prompt, conversation), we use memory activation service and move to that region
    */
   async moveMemoryBetweenRegions(
     memory: Memory,
@@ -128,6 +102,13 @@ export class MemoryBrainService {
     try {
       if (sourceRegion === targetRegion) return false;
 
+      // Handle activation/deactivation separately
+      if (sourceRegion === BrainRegion.DEACTIVATED) {
+        await this.activate(memory);
+      }
+      if (targetRegion === BrainRegion.DEACTIVATED) {
+        await this.deactivate(memory);
+      }
       // Update memory type based on the target region
       const updatedMemory: Memory = { ...memory, type: targetRegion };
       await this.memoryService.updateMemory(updatedMemory);
@@ -150,48 +131,18 @@ export class MemoryBrainService {
   /**
    * Create a new memory and add it to a specific region.
    */
-  async createMemory(
-    memory: Memory,
-    brainRegion: BrainRegion
-  ): Promise<boolean> {
-    try {
-      const memoryId = await this.memoryService.createMemory(memory);
-      if (!memoryId) {
-        this.warnService.warn('Failed to create memory');
-        return false;
-      }
-
-      const createdMemory = await this.memoryService.getMemory(memoryId);
-      if (!createdMemory) return false;
-
-      this.state[brainRegion].push(createdMemory);
-      this.updateState(this.state);
-      return true;
-    } catch (error) {
-      this.warnService.warn('Failed to create memory');
-      console.error('Error creating memory:', error);
-      return false;
-    }
+  async activate(memory: Memory): Promise<boolean> {
+    // need assistant WHOOPS... we need to know the assistant id
+    // TODO:
+    this.focusedMemoryService.addFocusedMemory(memory);
+    return false;
   }
 
   /**
    * Delete a memory from all regions.
    */
-  async deleteMemory(memory: Memory): Promise<boolean> {
-    try {
-      await this.memoryService.deleteMemory(memory.id);
-      Object.keys(this.state).forEach((region) => {
-        this.state[region as BrainRegion] = this.state[
-          region as BrainRegion
-        ].filter((m) => m.id !== memory.id);
-      });
-      this.updateState(this.state);
-      return true;
-    } catch (error) {
-      this.warnService.warn('Failed to delete memory');
-      console.error('Error deleting memory:', error);
-      return false;
-    }
+  async deactivate(memory: Memory): Promise<boolean> {
+    return false;
   }
 
   /**
