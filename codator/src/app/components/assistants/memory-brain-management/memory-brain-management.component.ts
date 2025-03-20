@@ -10,7 +10,7 @@ import { TagOLDService } from '../../../services/tag.service';
 import { WarnService } from '../../../services/warn.service';
 import { Subject, takeUntil } from 'rxjs';
 import { BrainRegion } from '../../../interfaces/important-concepts';
-import { MemoryBrainService } from '../../../services/orchestrators/assistant-memory.service';
+import { AssistantMemoryTypeService } from '../../../services/orchestrators/assistant-memory.service';
 
 @Component({
   selector: 'app-memory-brain-manager',
@@ -72,7 +72,7 @@ export class MemoryBrainManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private assistantService: AssistantService,
-    private memoryBrainService: MemoryBrainService,
+    private memoryBrainService: AssistantMemoryTypeService,
     private tagService: TagOLDService,
     private warnService: WarnService
   ) {}

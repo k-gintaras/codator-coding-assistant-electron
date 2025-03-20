@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { BrainRegion } from '../../../interfaces/important-concepts';
 import { Memory } from '../../../services/assistants-api/memory.service';
-import { MemoryBrainService } from '../../../services/orchestrators/assistant-memory.service';
+import { AssistantMemoryTypeService } from '../../../services/orchestrators/assistant-memory.service';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -25,7 +25,7 @@ export class MemoryBrainSwapperComponent {
   draggedMemory: { memory: Memory; fromRegion: BrainRegion } | null = null;
   brainRegionKeys = Object.values(BrainRegion);
 
-  constructor(private memoryBrainService: MemoryBrainService) {}
+  constructor(private memoryBrainService: AssistantMemoryTypeService) {}
 
   ngOnChanges() {
     if (this.assistant) {
