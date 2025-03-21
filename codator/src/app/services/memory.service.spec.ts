@@ -6,7 +6,6 @@ import {
 import { MemoryService } from './memory.service';
 import { AssistantService } from './assistants-services/assistant.service';
 import { ASSISTANT_API_CONFIG } from '../app.constants';
-import { Memory } from '../interfaces/assistant.model';
 
 describe('MemoryService', () => {
   let service: MemoryService;

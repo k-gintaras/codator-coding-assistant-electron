@@ -32,4 +32,13 @@ export class MemoryActivationService {
       type: MemoryRegion.DEACTIVATED,
     });
   }
+
+  async focus(focusRuleId: string, memory: Memory): Promise<boolean> {
+    // Perform activation logic, update backend
+    return await this.activateUpdate(focusRuleId, memory);
+  }
+
+  async unfocus(focusRuleId: string, memory: Memory): Promise<boolean> {
+    return await this.deactivateUpdate(focusRuleId, memory);
+  }
 }

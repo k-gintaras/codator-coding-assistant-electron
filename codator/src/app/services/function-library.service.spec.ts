@@ -3,7 +3,6 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MemoryService } from './memory.service';
 import { FunctionLibraryService } from './function-library.service';
 import { FunctionScript } from '../interfaces/function-script.interface';
-import { Memory } from '../interfaces/assistant.model';
 
 describe('FunctionLibraryService', () => {
   let service: FunctionLibraryService;
