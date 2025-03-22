@@ -7,10 +7,8 @@ import {
   AssistantMemoryService,
 } from '../assistants-api/assistant-memory.service';
 import { MemoryActivationService } from './memory-activation.service';
-import {
-  AssistantFull,
-  AssistantService,
-} from '../assistants-api/assistant.service';
+import { AssistantFull } from '../assistants-api/assistant.service';
+import { SelectedAssistantService } from './assistant-selected.service';
 
 // Memory brain regions for organization
 export enum MemoryRegion {
@@ -35,7 +33,7 @@ export class AssistantMemoryTypeService {
 
   constructor(
     private assistantMemoryService: AssistantMemoryService,
-    private assistantService: AssistantService,
+    private selectedAssistantService: SelectedAssistantService,
     private warnService: WarnService,
     private memoryActivationService: MemoryActivationService
   ) {}
@@ -49,7 +47,7 @@ export class AssistantMemoryTypeService {
     try {
       const freshMemoryState = AssistantMemoryTypeService.getCleanState();
       const assistantFull: AssistantFull | null =
-        await this.assistantService.getAssistantWithDetailsById(assistantId);
+        this.selectedAssistantService.getSelectedAssistant();
       if (!assistantFull) return freshMemoryState;
 
       this._focusRuleId = assistantFull.memoryFocusRule.id;

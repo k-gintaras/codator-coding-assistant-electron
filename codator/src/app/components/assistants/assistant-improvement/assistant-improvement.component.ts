@@ -9,7 +9,7 @@ import { Feedback } from '../../../services/assistants-api/feedback.service';
 import { Memory } from '../../../services/assistants-api/memory.service';
 import { WarnService } from '../../../services/warn.service';
 import { RelationshipGraphService } from '../../../services/assistants-api/relationship-graph.service';
-import { AssistantImprovementService } from '../../../services/orchestrators/assistant-improvement.service';
+import { AssistantImprovementService } from '../../../services/experiments/assistant-improvement.service';
 
 @Component({
   selector: 'app-assistant-improvement',

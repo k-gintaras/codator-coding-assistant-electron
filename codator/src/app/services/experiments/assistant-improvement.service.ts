@@ -176,7 +176,7 @@ Please format your response in a clear, structured way that separates different 
         createdAt: null,
         updatedAt: null,
         name: null,
-        summary: null
+        summary: null,
       };
 
       // Create the memory and associate it with the assistant

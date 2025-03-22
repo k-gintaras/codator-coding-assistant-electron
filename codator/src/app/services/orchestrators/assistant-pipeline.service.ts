@@ -5,7 +5,6 @@ import {
   RelationshipGraphService,
   Relationship,
 } from '../assistants-api/relationship-graph.service';
-import { TaskService } from '../assistants-api/task.service';
 
 export interface PipelineConnection {
   id: string;
@@ -40,8 +39,7 @@ export class AssistantPipelineService {
 
   constructor(
     private relationshipService: RelationshipGraphService,
-    private assistantService: AssistantService,
-    private taskService: TaskService
+    private assistantService: AssistantService
   ) {}
 
   /**
