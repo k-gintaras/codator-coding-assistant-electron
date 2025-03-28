@@ -68,6 +68,27 @@ export class OrchestratorService {
     }
   }
 
+  /** ✅ **Store a Memory for an Assistant** */
+  async forget(assistantId: string, memoryId: string): Promise<boolean> {
+    throw new Error(
+      'Server needs to pull and rebuild this is just added recently'
+    );
+    try {
+      const o = this.http
+        .post<AssistantsApiResponse>(`${this.apiUrl}/orchestrator/forget`, {
+          assistantId,
+          memoryId,
+        })
+        .pipe(take(1));
+
+      await lastValueFrom(o);
+      return true;
+    } catch (error) {
+      this.handleError(error, 'Error forgetting memory.');
+      return false;
+    }
+  }
+
   /** ✅ **Delegate a Task to an Assistant** */
   async delegateTask(
     assistantId: string,

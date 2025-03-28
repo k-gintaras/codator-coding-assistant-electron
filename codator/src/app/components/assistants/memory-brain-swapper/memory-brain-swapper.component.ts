@@ -1,9 +1,12 @@
-import { Component, Input } from '@angular/core';
-import { BrainRegion } from '../../../interfaces/important-concepts';
+import { Component, Input, OnChanges } from '@angular/core';
 import { Memory } from '../../../services/assistants-api/memory.service';
-import { AssistantMemoryTypeService } from '../../../services/orchestrators/assistant-memory.service';
+import {
+  AssistantMemoryTypeService,
+  MemoryRegion,
+} from '../../../services/orchestrators/assistant-memory.service';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ForgetService } from '../../../services/orchestrators/forget.service';
 
 @Component({
   selector: 'app-memory-brain-swapper',
@@ -11,21 +14,23 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './memory-brain-swapper.component.html',
   styleUrl: './memory-brain-swapper.component.scss',
 })
-export class MemoryBrainSwapperComponent {
+export class MemoryBrainSwapperComponent implements OnChanges {
   @Input() assistant: { id: string; name: string; description: string } | null =
     null;
-  brainRegions: Record<BrainRegion, Memory[]> = {
-    [BrainRegion.INSTRUCTION]: [],
-    [BrainRegion.PROMPT]: [],
-    [BrainRegion.CONVERSATION]: [],
-    [BrainRegion.REFERENCE]: [],
-    [BrainRegion.DISCONNECTED]: [],
+  brainRegions: Record<MemoryRegion, Memory[]> = {
+    [MemoryRegion.INSTRUCTION]: [],
+    [MemoryRegion.PROMPT]: [],
+    [MemoryRegion.CONVERSATION]: [],
+    [MemoryRegion.DEACTIVATED]: [],
   };
   newMemoryDesc = '';
-  draggedMemory: { memory: Memory; fromRegion: BrainRegion } | null = null;
-  brainRegionKeys = Object.values(BrainRegion);
+  draggedMemory: { memory: Memory; fromRegion: MemoryRegion } | null = null;
+  brainRegionKeys = Object.values(MemoryRegion);
 
-  constructor(private memoryBrainService: AssistantMemoryTypeService) {}
+  constructor(
+    private memoryBrainService: AssistantMemoryTypeService,
+    private forgetService: ForgetService
+  ) {}
 
   ngOnChanges() {
     if (this.assistant) {
@@ -41,27 +46,14 @@ export class MemoryBrainSwapperComponent {
     }
   }
 
-  async addMemory() {
-    // if (this.assistant && this.newMemoryDesc.trim()) {
-    //   await this.memoryBrainService.createMemory(
-    //     {
-    //       description: this.newMemoryDesc,
-    //       type: 'knowledge',
-    //     },
-    //     BrainRegion.CONVERSATION
-    //   );
-    //   this.newMemoryDesc = '';
-    //   this.loadMemories();
-    // }
-  }
-
-  async deleteMemory(memory: Memory, region: BrainRegion) {
-    console.log('Deleting memory', memory, region);
-    // await this.memoryBrainService.deleteMemory(memory);
+  async disconnectMemory(memory: Memory, region: MemoryRegion) {
+    if (!this.assistant) return;
+    console.log('Forgetting memory', memory, region);
+    await this.forgetService.forget(this.assistant.id, memory.id);
     this.loadMemories();
   }
 
-  onDragStart(memory: Memory, fromRegion: BrainRegion) {
+  onDragStart(memory: Memory, fromRegion: MemoryRegion) {
     this.draggedMemory = { memory, fromRegion };
   }
 
@@ -69,15 +61,15 @@ export class MemoryBrainSwapperComponent {
     event.preventDefault();
   }
 
-  async onDrop(event: DragEvent, targetRegion: BrainRegion) {
+  async onDrop(event: DragEvent, targetRegion: MemoryRegion) {
     event.preventDefault();
     if (this.draggedMemory && this.draggedMemory.fromRegion !== targetRegion) {
-      // await this.memoryBrainService.moveMemoryBetweenRegions(
-      //   this.draggedMemory.memory,
-      //   this.draggedMemory.fromRegion,
-      //   targetRegion
-      // );
-      // this.loadMemories();
+      await this.memoryBrainService.moveMemoryBetweenRegions(
+        this.draggedMemory.memory,
+        this.draggedMemory.fromRegion,
+        targetRegion
+      );
+      this.loadMemories();
     }
     this.draggedMemory = null;
   }
