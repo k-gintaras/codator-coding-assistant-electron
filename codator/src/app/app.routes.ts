@@ -30,6 +30,7 @@ export const routes: Routes = [
   { path: 'test-assistant-memory', component: AssistantMemoryTesterComponent },
   { path: 'pipeline', component: AssistantPipelineComponent },
   { path: 'improvement', component: AssistantImprovementComponent },
+  { path: 'assistant-brain/:id', component: MemoryBrainManagementComponent },
   { path: 'assistant-brain', component: MemoryBrainManagementComponent },
 ];
 

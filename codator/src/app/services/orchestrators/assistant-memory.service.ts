@@ -7,7 +7,10 @@ import {
   AssistantMemoryService,
 } from '../assistants-api/assistant-memory.service';
 import { MemoryActivationService } from './memory-activation.service';
-import { AssistantFull } from '../assistants-api/assistant.service';
+import {
+  AssistantFull,
+  AssistantService,
+} from '../assistants-api/assistant.service';
 import { SelectedAssistantService } from './assistant-selected.service';
 
 // Memory brain regions for organization
@@ -15,7 +18,7 @@ export enum MemoryRegion {
   INSTRUCTION = 'instruction',
   PROMPT = 'prompt',
   CONVERSATION = 'conversation',
-  DEACTIVATED = 'reference',
+  DEACTIVATED = 'deactivated',
 }
 
 @Injectable({
@@ -32,6 +35,7 @@ export class AssistantMemoryTypeService {
   private _focusRuleId: string | null = null;
 
   constructor(
+    private assistantService: AssistantService,
     private assistantMemoryService: AssistantMemoryService,
     private selectedAssistantService: SelectedAssistantService,
     private warnService: WarnService,
@@ -47,13 +51,44 @@ export class AssistantMemoryTypeService {
     try {
       const freshMemoryState = AssistantMemoryTypeService.getCleanState();
       const assistantFull: AssistantFull | null =
-        this.selectedAssistantService.getSelectedAssistant();
+        await this.assistantService.getAssistantWithDetailsById(assistantId);
       if (!assistantFull) return freshMemoryState;
 
       this._focusRuleId = assistantFull.memoryFocusRule.id;
 
       const allMemories: AssistantMemoryData | null =
         await this.assistantMemoryService.getAllAssistMemories(assistantId);
+
+      console.log('allMemories', allMemories);
+
+      if (allMemories) {
+        this.categorizeMemories(allMemories, freshMemoryState);
+      }
+
+      this.updateState(freshMemoryState);
+      return freshMemoryState;
+    } catch (error) {
+      this.warnService.warn('Failed to load assistant memories');
+      console.error('Error fetching memories:', error);
+      return this.state;
+    }
+  }
+
+  async getSelectedAssistantMemoriesByRegion(): Promise<
+    Record<MemoryRegion, Memory[]>
+  > {
+    try {
+      const freshMemoryState = AssistantMemoryTypeService.getCleanState();
+      const assistantFull: AssistantFull | null =
+        this.selectedAssistantService.getSelectedAssistant();
+      if (!assistantFull) return freshMemoryState;
+
+      this._focusRuleId = assistantFull.memoryFocusRule.id;
+
+      const allMemories: AssistantMemoryData | null =
+        await this.assistantMemoryService.getAllAssistMemories(
+          assistantFull.id
+        );
 
       if (allMemories) {
         this.categorizeMemories(allMemories, freshMemoryState);
@@ -110,22 +145,42 @@ export class AssistantMemoryTypeService {
     allMemories: AssistantMemoryData,
     state: Record<MemoryRegion, Memory[]>
   ): void {
+    // First, categorize focused memories
     allMemories.focused?.forEach((memory) => {
       switch (memory.type) {
         case MemoryRegion.INSTRUCTION:
-          state[MemoryRegion.INSTRUCTION].push(memory);
+          if (
+            !state[MemoryRegion.INSTRUCTION].some((m) => m.id === memory.id)
+          ) {
+            state[MemoryRegion.INSTRUCTION].push(memory);
+          }
           break;
         case MemoryRegion.PROMPT:
-          state[MemoryRegion.PROMPT].push(memory);
+          if (!state[MemoryRegion.PROMPT].some((m) => m.id === memory.id)) {
+            state[MemoryRegion.PROMPT].push(memory);
+          }
           break;
         default:
-          state[MemoryRegion.CONVERSATION].push(memory);
+          if (
+            !state[MemoryRegion.CONVERSATION].some((m) => m.id === memory.id)
+          ) {
+            state[MemoryRegion.CONVERSATION].push(memory);
+          }
       }
     });
 
+    // Now handle owned and related memories, making sure we don't add focused memories
     [...(allMemories.owned ?? []), ...(allMemories.related ?? [])].forEach(
       (memory) => {
-        state[MemoryRegion.DEACTIVATED].push(memory);
+        // If it's not already in focused, add it to deactivated region
+        if (
+          !state[MemoryRegion.DEACTIVATED].some((m) => m.id === memory.id) &&
+          !allMemories.focused?.some(
+            (focusedMemory) => focusedMemory.id === memory.id
+          )
+        ) {
+          state[MemoryRegion.DEACTIVATED].push(memory);
+        }
       }
     );
   }

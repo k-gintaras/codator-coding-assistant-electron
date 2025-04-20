@@ -10,6 +10,7 @@ import {
   OrchestratorService,
   TaskRequest,
 } from '../../../services/assistants-api/orchestrator.service';
+import { SelectedAssistantService } from '../../../services/orchestrators/assistant-selected.service';
 
 @Component({
   selector: 'app-assistant-library',
@@ -26,6 +27,7 @@ export class AssistantLibraryComponent implements OnInit {
   constructor(
     private assistantService: AssistantService,
     private orchestratorService: OrchestratorService, // Inject OrchestratorService
+    private selectedAssistantService: SelectedAssistantService,
     private dialog: MatDialog,
     private router: Router
   ) {}
@@ -33,6 +35,17 @@ export class AssistantLibraryComponent implements OnInit {
   selectAssistant(assistant: Assistant) {
     this.selectedAssistant = assistant;
     this.assistantService.selectAssistant(assistant);
+
+    // Add this line to update the selected assistant service
+    if (assistant) {
+      this.assistantService
+        .getFullAssistantByIdPromise(assistant.id)
+        .then((fullAssistant) => {
+          if (fullAssistant) {
+            this.selectedAssistantService.setAssistant(fullAssistant);
+          }
+        });
+    }
   }
 
   navigateToChat(id: string): void {

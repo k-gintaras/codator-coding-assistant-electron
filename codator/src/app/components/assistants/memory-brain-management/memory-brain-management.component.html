@@ -1,285 +1,38 @@
-<div class="max-w-7xl mx-auto p-4 bg-slate-700 rounded-lg shadow-lg">
-  <h2 class="text-2xl font-bold mb-4 text-center">
-    Assistant Memory Brain Manager
-  </h2>
+<div *ngIf="selectedAssistant">
+  <h2 class="text-2xl font-bold text-center">{{ selectedAssistant.name }}</h2>
 
-  <!-- Loading indicator -->
   <div *ngIf="isLoading" class="text-center my-8">
-    <span class="loading loading-spinner loading-lg"></span>
-    <p class="mt-2">Processing...</p>
+    <span class="loading loading-spinner"></span>
+    <p>Loading memories...</p>
   </div>
 
-  <!-- Main content (hidden while loading) -->
-  <div *ngIf="!isLoading" class="space-y-6">
-    <!-- Assistant Selection -->
-    <div class="bg-slate-800 p-4 rounded-lg shadow">
-      <h3 class="text-xl font-semibold mb-3">Select Assistant</h3>
-
-      <div class="flex flex-wrap gap-2">
-        <button
-          *ngFor="let assistant of assistants"
-          (click)="selectAssistant(assistant.id)"
-          class="btn btn-outline"
-          [class.btn-primary]="selectedAssistant?.id === assistant.id"
-        >
-          {{ assistant.name }}
-        </button>
-      </div>
-
-      <!-- Selected assistant info -->
-      <div *ngIf="selectedAssistant" class="mt-4 p-4 bg-slate-900 rounded-lg">
-        <div class="flex justify-between items-start">
-          <div>
-            <h4 class="font-semibold text-lg">{{ selectedAssistant.name }}</h4>
-            <p class="text-sm text-gray-400">
-              {{ selectedAssistant.description }}
-            </p>
-          </div>
-          <div class="text-right">
-            <p class="text-sm">
-              <span class="font-semibold">Type:</span>
-              {{ selectedAssistant.type }}
-            </p>
-            <p class="text-sm">
-              <span class="font-semibold">Model:</span>
-              {{ selectedAssistant.model }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- The Assistant's Brain - visual regions -->
-    <div *ngIf="selectedAssistant" class="bg-slate-800 p-4 rounded-lg shadow">
-      <h3 class="text-xl font-semibold mb-3">Assistant Brain Regions</h3>
-      <p class="text-sm text-gray-300 mb-6">
-        Drag and drop memories between regions to change how they're used
-      </p>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- INSTRUCTION Region - System Messages -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Loop over Memory Regions -->
+    <div
+      *ngFor="
+        let region of [
+          memoryRegion.INSTRUCTION,
+          memoryRegion.PROMPT,
+          memoryRegion.CONVERSATION,
+          memoryRegion.DEACTIVATED
+        ]
+      "
+      class="p-4 bg-gray-700 rounded shadow min-h-64"
+      (dragover)="onDragOver($event)"
+      (drop)="onDrop($event, region)"
+    >
+      <h3 class="text-xl">{{ region | titlecase }}</h3>
+      <div class="space-y-2">
         <div
-          class="brain-region bg-indigo-900 p-4 rounded-lg shadow min-h-64"
-          (dragover)="onDragOver($event)"
-          (drop)="onDrop($event, BrainRegion.INSTRUCTION)"
+          *ngFor="let memory of brainRegions[region]"
+          class="p-2 bg-slate-800 rounded cursor-move"
+          draggable="true"
+          (dragstart)="onDragStart(memory)"
         >
-          <h4 class="font-semibold text-lg mb-2 flex items-center">
-            <span
-              class="inline-block w-3 h-3 bg-indigo-400 rounded-full mr-2"
-            ></span>
-            Instructions
-          </h4>
-          <p class="text-xs text-gray-300 mb-4">
-            Added to system message. Very reliable for behavior control.
-          </p>
-
-          <div class="space-y-2 memories-container">
-            <div
-              *ngFor="let memory of brainRegions[BrainRegion.INSTRUCTION]"
-              class="memory p-2 bg-slate-800 rounded cursor-move"
-              draggable="true"
-              (dragstart)="onDragStart(memory)"
-            >
-              <div class="flex justify-between items-start">
-                <span class="text-xs text-indigo-300">{{ memory.type }}</span>
-                <div class="flex space-x-1">
-                  <button
-                    class="text-xs hover:text-red-400"
-                    (click)="deleteMemory(memory)"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-              <p class="text-sm mt-1">{{ memory.description }}</p>
-            </div>
-
-            <div
-              *ngIf="brainRegions[BrainRegion.INSTRUCTION].length === 0"
-              class="text-center text-sm text-gray-400 py-4"
-            >
-              No instruction memories
-            </div>
+          <div class="flex justify-between">
+            <span class="text-xs text-gray-300">{{ memory.type }}</span>
           </div>
-        </div>
-
-        <!-- CONVERSATION Region - Chat History/Thread -->
-        <div
-          class="brain-region bg-emerald-900 p-4 rounded-lg shadow min-h-64"
-          (dragover)="onDragOver($event)"
-          (drop)="onDrop($event, BrainRegion.CONVERSATION)"
-        >
-          <h4 class="font-semibold text-lg mb-2 flex items-center">
-            <span
-              class="inline-block w-3 h-3 bg-emerald-400 rounded-full mr-2"
-            ></span>
-            Conversation
-          </h4>
-          <p class="text-xs text-gray-300 mb-4">
-            Added to conversation history. Good for facts and context.
-          </p>
-
-          <div class="space-y-2 memories-container">
-            <div
-              *ngFor="let memory of brainRegions[BrainRegion.CONVERSATION]"
-              class="memory p-2 bg-slate-800 rounded cursor-move"
-              draggable="true"
-              (dragstart)="onDragStart(memory)"
-            >
-              <div class="flex justify-between items-start">
-                <span class="text-xs text-emerald-300">{{ memory.type }}</span>
-                <div class="flex space-x-1">
-                  <button
-                    class="text-xs hover:text-red-400"
-                    (click)="deleteMemory(memory)"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-              <p class="text-sm mt-1">{{ memory.description }}</p>
-            </div>
-
-            <div
-              *ngIf="brainRegions[BrainRegion.CONVERSATION].length === 0"
-              class="text-center text-sm text-gray-400 py-4"
-            >
-              No conversation memories
-            </div>
-          </div>
-        </div>
-
-        <!-- REFERENCE Region - Owned but not focused -->
-        <div
-          class="brain-region bg-amber-900 p-4 rounded-lg shadow min-h-64"
-          (dragover)="onDragOver($event)"
-          (drop)="onDrop($event, BrainRegion.REFERENCE)"
-        >
-          <h4 class="font-semibold text-lg mb-2 flex items-center">
-            <span
-              class="inline-block w-3 h-3 bg-amber-400 rounded-full mr-2"
-            ></span>
-            Reference
-          </h4>
-          <p class="text-xs text-gray-300 mb-4">
-            Owned but not included by default. Tagged for retrieval.
-          </p>
-
-          <div class="space-y-2 memories-container">
-            <div
-              *ngFor="let memory of brainRegions[BrainRegion.REFERENCE]"
-              class="memory p-2 bg-slate-800 rounded cursor-move"
-              draggable="true"
-              (dragstart)="onDragStart(memory)"
-            >
-              <div class="flex justify-between items-start">
-                <span class="text-xs text-amber-300">{{ memory.type }}</span>
-                <div class="flex space-x-1">
-                  <button
-                    class="text-xs hover:text-red-400"
-                    (click)="deleteMemory(memory)"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-              <p class="text-sm mt-1">{{ memory.description }}</p>
-            </div>
-
-            <div
-              *ngIf="brainRegions[BrainRegion.REFERENCE].length === 0"
-              class="text-center text-sm text-gray-400 py-4"
-            >
-              No reference memories
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Prompt region (not implemented yet, placeholder for future) -->
-
-      <div
-        class="brain-region bg-blue-900 p-4 rounded-lg shadow min-h-64 mt-6"
-        (dragover)="onDragOver($event)"
-        (drop)="onDrop($event, BrainRegion.PROMPT)"
-      >
-        <h4 class="font-semibold text-lg mb-2 flex items-center">
-          <span
-            class="inline-block w-3 h-3 bg-blue-400 rounded-full mr-2"
-          ></span>
-          Prompt Prepend
-        </h4>
-        <p class="text-xs text-gray-300 mb-4">
-          Automatically added to the beginning of each prompt.
-        </p>
-      </div>
-    </div>
-
-    <!-- Memory Search and Creation -->
-    <div *ngIf="selectedAssistant" class="bg-slate-800 p-4 rounded-lg shadow">
-      <h3 class="text-xl font-semibold mb-3">Memory Library</h3>
-
-      <!-- Search and Filters -->
-      <div class="flex flex-wrap gap-4 mb-4">
-        <div class="flex-1">
-          <input
-            type="text"
-            [(ngModel)]="memorySearchText"
-            placeholder="Search memories..."
-            class="input input-bordered w-full"
-          />
-        </div>
-
-        <div class="flex-1">
-          <select
-            multiple
-            [(ngModel)]="selectedTags"
-            class="select select-bordered w-full h-10"
-          >
-            <option *ngFor="let tag of availableTags" [value]="tag">
-              {{ tag }}
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Available Memories (Disconnected) -->
-      <div
-        class="brain-region bg-gray-800 p-4 rounded-lg shadow min-h-64 mt-4"
-        (dragover)="onDragOver($event)"
-        (drop)="onDrop($event, BrainRegion.DISCONNECTED)"
-      >
-        <h4 class="font-semibold text-lg mb-2">Available Memories</h4>
-        <p class="text-xs text-gray-300 mb-4">
-          Drag these memories to any brain region to connect them
-        </p>
-
-        <div class="space-y-2 memories-container max-h-80 overflow-y-auto">
-          <div
-            *ngFor="
-              let memory of filterMemories(
-                brainRegions[BrainRegion.DISCONNECTED]
-              )
-            "
-            class="memory p-2 bg-slate-700 rounded cursor-move"
-            draggable="true"
-            (dragstart)="onDragStart(memory)"
-          >
-            <div class="flex justify-between items-start">
-              <span class="text-xs text-gray-300">{{
-                memory.description
-              }}</span>
-              <span class="text-xs text-gray-300">{{ memory.type }}</span>
-              <div class="flex space-x-1">
-                <button
-                  class="text-xs hover:text-red-400"
-                  (click)="deleteMemory(memory)"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
-          </div>
+          <p class="text-sm">{{ memory.description }}</p>
         </div>
       </div>
     </div>

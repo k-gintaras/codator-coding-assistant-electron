@@ -21,12 +21,6 @@
         (dragstart)="onDragStart(memory, region)"
       >
         <span class="text-xs text-gray-300">{{ memory.description }}</span>
-        <button
-          class="btn btn-xs btn-error"
-          (click)="deleteMemory(memory, region)"
-        >
-          🗑️
-        </button>
       </div>
       <p
         *ngIf="!brainRegions[region].length"
@@ -35,16 +29,5 @@
         No memories
       </p>
     </div>
-  </div>
-
-  <div class="mt-4">
-    <input
-      [(ngModel)]="newMemoryDesc"
-      placeholder="New memory..."
-      class="input input-sm input-bordered w-full"
-    />
-    <button class="btn btn-sm btn-primary w-full mt-2" (click)="addMemory()">
-      Add Memory
-    </button>
   </div>
 </div>

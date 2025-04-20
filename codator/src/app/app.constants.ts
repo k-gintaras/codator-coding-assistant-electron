@@ -9,7 +9,7 @@ import {
 } from '@angular/animations';
 
 export const ASSISTANT_API_CONFIG = {
-  baseUrl: 'http://192.168.1.182:3001',
+  baseUrl: 'http://192.168.4.26:3001',
   assistantUrl: '/assistant',
   feedbackUrl: '/feedback',
   memoryUrl: '/memory',
